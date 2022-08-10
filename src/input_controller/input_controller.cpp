@@ -8,6 +8,7 @@ void InputController::loop()
   char c;                 // Read a char from the Serial
   char buf[msg_len]{0};   // Collect chars into message
   uint8_t i = 0;          // Current message chars position
+  unsigned long id;
 
   while (1)
   {
@@ -28,15 +29,13 @@ void InputController::loop()
       switch (buf[0])
       {
       case 'a': // Start all motors
-        _commands->push_back(Command{MOTOR_ON, 1, 0});
-        _commands->push_back(Command{MOTOR_ON, 2, 0});
-        _commands->push_back(Command{MOTOR_ON, 3, 0});
+        for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
+            _commands->push_back(Command{MOTOR_ON, i, 0});
         break;
 
       case 'b': // Stop all motors
-        _commands->push_back(Command{MOTOR_OFF, 1, 0});
-        _commands->push_back(Command{MOTOR_OFF, 2, 0});
-        _commands->push_back(Command{MOTOR_OFF, 3, 0});
+        for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
+            _commands->push_back(Command{MOTOR_OFF, i, 0});
         break;
 
       case 'c': // Check a motor
@@ -57,10 +56,25 @@ void InputController::loop()
       }
 
       case 'f': // Zero all motors
-        _commands->push_back(Command{MOTOR_ZERO, 1, 0});
-        _commands->push_back(Command{MOTOR_ZERO, 2, 0});
-        _commands->push_back(Command{MOTOR_ZERO, 3, 0});
+        for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
+            _commands->push_back(Command{SET_ORIGIN, i, 0});
         break;
+      case 'l':
+          id = (buf[1] - 48) * 10 + (buf[2] - 48);
+
+          if (id > 99)
+              id = 0;
+
+          _commands->push_back(Command{ SET_LOW, id, 0 });
+          break;
+      case 'h':
+          id = (buf[1] - 48) * 10 + (buf[2] - 48);
+
+          if (id > 99)
+              id = 0;
+
+          _commands->push_back(Command{ SET_HIGH, id, 0 });
+          break;
       }
 
       // Reset the message
@@ -68,6 +82,6 @@ void InputController::loop()
       i = 0;
     }
 
-    vTaskDelay(50);
+    vTaskDelay(1);
   }
 }

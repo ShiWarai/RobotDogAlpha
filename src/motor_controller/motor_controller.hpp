@@ -8,6 +8,7 @@
 
 #include "commands.hpp"
 #include "limits.hpp"
+#include "motor.hpp"
 
 class MotorController
 {
@@ -16,8 +17,9 @@ public:
   void loop();
 
 private:
-  mcp2515_can *_can1;
+  mcp2515_can *_can_bus;
   std::vector<Command> *_commands;
+
   const int _delay = 10;
 
   void _start_motor(mcp2515_can *can, unsigned long id,                             // CAN bus and CAN ID

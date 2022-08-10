@@ -5,7 +5,9 @@ enum CommandType
   MOTOR_NONE,
   MOTOR_OFF,
   MOTOR_ON,
-  MOTOR_ZERO,
+  SET_ORIGIN,
+  SET_LOW,
+  SET_HIGH,
   CHECK,
   CONTROL,
 };
