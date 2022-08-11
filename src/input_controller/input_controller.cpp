@@ -40,13 +40,7 @@ void InputController::loop()
 
       case 'c': // Check a motor
       {
-        char a = buf[1];
-        char b = buf[2];
-
-        int x = a - 48;
-        int y = b - 48;
-
-        unsigned int id = x * 10 + y;
+        id = (buf[1] - 48) * 10 + (buf[2] - 48);
 
         if (id > 99)
         {
