@@ -9,6 +9,7 @@ void InputController::loop()
   char buf[msg_len]{0};   // Collect chars into message
   uint8_t i = 0;          // Current message chars position
   unsigned long id;
+  unsigned short pos;
 
   while (1)
   {
@@ -40,13 +41,13 @@ void InputController::loop()
 
       case 'c': // Check a motor
       {
-        id = (buf[1] - 48) * 10 + (buf[2] - 48);
+          id = (buf[1] - 48) * 10 + (buf[2] - 48);
 
-        if (id > 99)
-        {
-            Serial.println("Wrong id!");
-            break;
-        }
+          if (id <= 0 || id > 99)
+          {
+              Serial.println("Wrong id!");
+              break;
+          }
 
         _commands->push_back(Command{CHECK, id, 0});
         break;
@@ -59,52 +60,70 @@ void InputController::loop()
       case 'l':
           id = (buf[1] - 48) * 10 + (buf[2] - 48);
 
-          if (id > 99)
+          if (id <= 0 || id > 99)
           {
               Serial.println("Wrong id!");
               break;
           }
 
-          _commands->push_back(Command{ SET_LOW, id, 0 });
+          _commands->push_back(Command{ SET_MIN, id, 0 });
           break;
       case 'h':
           id = (buf[1] - 48) * 10 + (buf[2] - 48);
 
-          if (id > 99)
+          if (id <= 0 || id > 99)
           {
               Serial.println("Wrong id!");
               break;
           }
 
-          _commands->push_back(Command{ SET_HIGH, id, 0 });
+          _commands->push_back(Command{ SET_MAX, id, 0 });
           break;
       case 'w':
           id = (buf[1] - 48) * 10 + (buf[2] - 48);
 
-          if (id > 99)
+          if (id <= 0 || id > 99)
           {
               Serial.println("Wrong id!");
               break;
           }
 
-          _commands->push_back(Command{ MOVE_HIGH, id, 0 });
+          _commands->push_back(Command{ MOVE_MAX, id, 0 }); // Replace to _commands->push_back(Command{ CONTROL, id, 1 });
           break;
       case 's':
           id = (buf[1] - 48) * 10 + (buf[2] - 48);
 
-          if (id > 99)
+          if (id <= 0 || id > 99)
           {
               Serial.println("Wrong id!");
               break;
           }
 
-          _commands->push_back(Command{ MOVE_LOW, id, 0 });
+          _commands->push_back(Command{ MOVE_MIN, id, 0 }); // Replace to _commands->push_back(Command{ CONTROL, id, 0 });
+          break;
+      case 'm':
+          id = (buf[1] - 48) * 10 + (buf[2] - 48);
+          pos = (buf[4] - 48) * 100 + (buf[5] - 48) * 10 + (buf[6] - 48);
+
+          if (id <= 0 || id > 99)
+          {
+              Serial.println("Wrong id!");
+              break;
+          }
+
+          if (!(pos >= 0 && pos <= 100)) {
+              Serial.println("Wrong position!");
+              break;
+          }
+
+          _commands->push_back(Command{ CONTROL, id, float(pos) / 100 });
           break;
       }
 
       // Reset the message
       memset(buf, 0, sizeof(buf));
       i = 0;
+      // Serial.println("CLEAR!");
     }
 
     vTaskDelay(1);

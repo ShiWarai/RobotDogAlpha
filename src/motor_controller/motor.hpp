@@ -8,7 +8,8 @@ struct Motor
 	float max_pos = 0;
 
 	float pos;
-	float vel;
-	float trq;
-	float tr;
+	float stiffness = 0;
+	float vel = 0;
+	float trq = 0;
+	float tr = 0;
 };
