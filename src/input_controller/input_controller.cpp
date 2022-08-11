@@ -49,7 +49,10 @@ void InputController::loop()
         unsigned int id = x * 10 + y;
 
         if (id > 99)
-          id = 0;
+        {
+            Serial.println("Wrong id!");
+            break;
+        }
 
         _commands->push_back(Command{CHECK, id, 0});
         break;
@@ -63,7 +66,10 @@ void InputController::loop()
           id = (buf[1] - 48) * 10 + (buf[2] - 48);
 
           if (id > 99)
-              id = 0;
+          {
+              Serial.println("Wrong id!");
+              break;
+          }
 
           _commands->push_back(Command{ SET_LOW, id, 0 });
           break;
@@ -71,9 +77,34 @@ void InputController::loop()
           id = (buf[1] - 48) * 10 + (buf[2] - 48);
 
           if (id > 99)
-              id = 0;
+          {
+              Serial.println("Wrong id!");
+              break;
+          }
 
           _commands->push_back(Command{ SET_HIGH, id, 0 });
+          break;
+      case 'w':
+          id = (buf[1] - 48) * 10 + (buf[2] - 48);
+
+          if (id > 99)
+          {
+              Serial.println("Wrong id!");
+              break;
+          }
+
+          _commands->push_back(Command{ MOVE_HIGH, id, 0 });
+          break;
+      case 's':
+          id = (buf[1] - 48) * 10 + (buf[2] - 48);
+
+          if (id > 99)
+          {
+              Serial.println("Wrong id!");
+              break;
+          }
+
+          _commands->push_back(Command{ MOVE_LOW, id, 0 });
           break;
       }
 

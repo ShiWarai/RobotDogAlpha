@@ -43,7 +43,7 @@ void setup()
   MOTORS[2].min_pos = -0.39;
   MOTORS[2].max_pos = 0.65;
   MOTORS[3].min_pos = 0.00;
-  MOTORS[3].max_pos = 1.74;
+  MOTORS[3].max_pos = 1.4;
 
   xTaskCreate(task_input_controller, "Input controller", 1024, NULL, 1, NULL);
   delay(5);

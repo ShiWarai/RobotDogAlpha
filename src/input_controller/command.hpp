@@ -8,6 +8,8 @@ enum CommandType
   SET_ORIGIN,
   SET_LOW,
   SET_HIGH,
+  MOVE_LOW,
+  MOVE_HIGH,
   CHECK,
   CONTROL,
 };

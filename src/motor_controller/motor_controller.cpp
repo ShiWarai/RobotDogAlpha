@@ -169,6 +169,18 @@ void MotorController::loop()
         Serial.printf("New max: %f\r\n", MOTORS[last_command.id].max_pos);
         break;
 
+    case CommandType::MOVE_LOW:
+        Serial.printf("Go low: %f\r\n", MOTORS[last_command.id].min_pos);
+
+        _control_motor(_can_bus, last_command.id, MOTORS[last_command.id].min_pos, 1, 0, &m_id, &pos, &vel, &trq);
+        break;
+
+    case CommandType::MOVE_HIGH:
+        Serial.printf("Go high: %f\r\n", MOTORS[last_command.id].max_pos);
+
+        _control_motor(_can_bus, last_command.id, MOTORS[last_command.id].max_pos, 1, 0, &m_id, &pos, &vel, &trq);
+        break;
+
     default:
       break;
     }
@@ -178,7 +190,7 @@ void MotorController::loop()
     MOTORS[last_command.id].trq = trq;
 
     last_command = Command{};
-    vTaskDelay(100);
+    vTaskDelay(10);
   }
 }
 
