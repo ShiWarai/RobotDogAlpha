@@ -17,7 +17,7 @@ public:
   void loop();
 
 private:
-  mcp2515_can *_can_bus;
+  mcp2515_can *_can_bus_1;
   std::vector<Command> *_commands;
 
   const int _delay = 10;

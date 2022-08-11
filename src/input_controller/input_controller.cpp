@@ -43,7 +43,7 @@ void InputController::loop()
       {
           id = (buf[1] - 48) * 10 + (buf[2] - 48);
 
-          if (id <= 0 || id > 99)
+          if (id <= 0 || id >= 100)
           {
               Serial.println("Wrong id!");
               break;
@@ -57,10 +57,11 @@ void InputController::loop()
         for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
             _commands->push_back(Command{SET_ORIGIN, i, 0});
         break;
+
       case 'l':
           id = (buf[1] - 48) * 10 + (buf[2] - 48);
 
-          if (id <= 0 || id > 99)
+          if (id <= 0 || id >= 100)
           {
               Serial.println("Wrong id!");
               break;
@@ -68,10 +69,11 @@ void InputController::loop()
 
           _commands->push_back(Command{ SET_MIN, id, 0 });
           break;
+
       case 'h':
           id = (buf[1] - 48) * 10 + (buf[2] - 48);
 
-          if (id <= 0 || id > 99)
+          if (id <= 0 || id >= 100)
           {
               Serial.println("Wrong id!");
               break;
@@ -79,10 +81,11 @@ void InputController::loop()
 
           _commands->push_back(Command{ SET_MAX, id, 0 });
           break;
+
       case 'w':
           id = (buf[1] - 48) * 10 + (buf[2] - 48);
 
-          if (id <= 0 || id > 99)
+          if (id <= 0 || id >= 100)
           {
               Serial.println("Wrong id!");
               break;
@@ -90,10 +93,11 @@ void InputController::loop()
 
           _commands->push_back(Command{ MOVE_MAX, id, 0 }); // Replace to _commands->push_back(Command{ CONTROL, id, 1 });
           break;
+
       case 's':
           id = (buf[1] - 48) * 10 + (buf[2] - 48);
 
-          if (id <= 0 || id > 99)
+          if (id <= 0 || id >= 100)
           {
               Serial.println("Wrong id!");
               break;
@@ -101,11 +105,12 @@ void InputController::loop()
 
           _commands->push_back(Command{ MOVE_MIN, id, 0 }); // Replace to _commands->push_back(Command{ CONTROL, id, 0 });
           break;
+
       case 'm':
           id = (buf[1] - 48) * 10 + (buf[2] - 48);
           pos = (buf[4] - 48) * 100 + (buf[5] - 48) * 10 + (buf[6] - 48);
 
-          if (id <= 0 || id > 99)
+          if (id <= 0 || id >= 100)
           {
               Serial.println("Wrong id!");
               break;
@@ -123,7 +128,6 @@ void InputController::loop()
       // Reset the message
       memset(buf, 0, sizeof(buf));
       i = 0;
-      // Serial.println("CLEAR!");
     }
 
     vTaskDelay(1);
