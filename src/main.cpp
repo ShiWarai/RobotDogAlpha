@@ -8,7 +8,7 @@
 
 Motor MOTORS[MOTORS_COUNT + 1]{ Motor{}, Motor{}, Motor{}, Motor{} };
 
-mcp2515_can can_bus_1(5);
+mcp2515_can can_bus_1(13);
 
 std::vector<Command> commands;
 
@@ -46,14 +46,14 @@ void setup()
   }
 
   // Set max and min - DEBUG
-  MOTORS[1].min_pos = -0.73;
-  MOTORS[1].max_pos = 0.0;
-  MOTORS[1].stiffness = 12;
-  MOTORS[2].min_pos = -0.39;
-  MOTORS[2].max_pos = 0.65;
-  MOTORS[2].stiffness = 6;
-  MOTORS[3].min_pos = 0.00;
-  MOTORS[3].max_pos = 1.2;
+  MOTORS[1].min_pos = -0.73 - 0.5;
+  MOTORS[1].max_pos = 0.0 - 0.3;
+  MOTORS[1].stiffness = 15;
+  MOTORS[2].min_pos = -0.45;
+  MOTORS[2].max_pos = 0.5;
+  MOTORS[2].stiffness = 8;
+  MOTORS[3].min_pos = 0.20;
+  MOTORS[3].max_pos = 1.5;
   MOTORS[3].stiffness = 1;
 
   xTaskCreate(task_input_controller, "Input controller", 1024, NULL, 1, NULL);

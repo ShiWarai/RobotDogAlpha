@@ -9,9 +9,14 @@ void JoystickController::loop()
     float pos2;
     float pos3;
 
-    PS4.begin(MAC_PS4_JOYSTICK);
+    ButtonWithState motorSwitch;
+    bool motorOnLast = false;
+    ButtonWithState sharePosesButton;
+    ClickableButton setOriginButton;
+    ClickableButton moveToOriginButton;
 
-    ButtonWithState sharePoses;
+    PS4.begin(MAC_PS4_JOYSTICK);
+    PS4.setLed(255, 0, 0);
 
     while (1) {
         if (PS4.isConnected()) {
@@ -19,10 +24,41 @@ void JoystickController::loop()
             pos2 = PS4.LStickY();
             pos3 = PS4.RStickY();
 
-            sharePoses.turn(PS4.Share());
-
             // Sending the commands
-            if (sharePoses.state()) {
+            if (motorSwitch.turn(PS4.PSButton())) {
+                if (motorSwitch.state() != motorOnLast)
+                {
+                    PS4.setLed(0, 128, 0);
+                    for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
+                        _commands->push_back(Command{ MOTOR_ON, i, 0 });
+
+                    motorOnLast = true;
+                }
+            }
+            else {
+                if (motorSwitch.state() != motorOnLast)
+                {
+                    PS4.setLed(255, 0, 0);
+                    for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
+                        _commands->push_back(Command{ MOTOR_OFF, i, 0 });
+
+                    motorOnLast = false;
+                }
+            }
+
+            if (moveToOriginButton.turn(PS4.Circle())) {
+                for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
+                    _commands->push_back(Command{ MOTOR_NONE, i, 0 });
+            }
+
+            if (setOriginButton.turn(PS4.Options())) {
+                for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
+                    _commands->push_back(Command{ SET_ORIGIN, i, 0 });
+            } 
+
+            if (sharePosesButton.turn(PS4.Share())) {
+                PS4.setRumble(10, 0);
+
                 pos1 = float(128 + pos1) / 256;
                 pos2 = float(128 + pos2) / 256;
                 pos3 = float(128 + pos3) / 256;
@@ -32,6 +68,11 @@ void JoystickController::loop()
                 _commands->push_back(Command{ CONTROL, 3, pos3 });
                 vTaskDelay(100);
             }
+            else {
+                PS4.setRumble(0, 0);
+            }
+
+            PS4.sendToController();
         }
 
         vTaskDelay(100);

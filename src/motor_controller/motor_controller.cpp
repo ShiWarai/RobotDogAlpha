@@ -24,6 +24,23 @@ void MotorController::loop()
 
     switch (last_command.type)
     {
+    case CommandType::CONTROL:
+        pos = min(max(last_command.value, float(0.0)), float(1.0)); // Maybe just int const...
+        pos = MOTORS[last_command.id].min_pos + pos * abs(MOTORS[last_command.id].max_pos - MOTORS[last_command.id].min_pos);
+
+        Serial.print("Move to ");
+        Serial.print(pos);
+        Serial.print(" with stiffness ");
+        Serial.println(MOTORS[last_command.id].stiffness);
+
+        _control_motor(_can_bus_1, last_command.id, pos, MOTORS[last_command.id].stiffness, 0, &m_id, &pos, &vel, &trq);
+        break;
+
+    case CommandType::MOTOR_NONE:
+      Serial.println("Set none");
+      _control_motor(_can_bus_1, last_command.id, 0, 0, 0, &m_id, &pos, &vel, &trq);
+      break;
+
     case CommandType::MOTOR_ON:
       Serial.println("Motor start");
       _start_motor(_can_bus_1, last_command.id, &m_id, &pos, &vel, &trq);
@@ -94,18 +111,6 @@ void MotorController::loop()
         Serial.println(MOTORS[last_command.id].max_pos);
 
         _control_motor(_can_bus_1, last_command.id, MOTORS[last_command.id].max_pos, MOTORS[last_command.id].stiffness, 0, &m_id, &pos, &vel, &trq);
-        break;
-
-    case CommandType::CONTROL:
-        pos = min(max(last_command.value, float(0.0)), float(1.0)); // Maybe just int const...
-        pos = MOTORS[last_command.id].min_pos + pos * abs(MOTORS[last_command.id].max_pos - MOTORS[last_command.id].min_pos);
-        
-        Serial.print("Move to ");
-        Serial.print(pos);
-        Serial.print(" with stiffness ");
-        Serial.println(MOTORS[last_command.id].stiffness);
-
-        _control_motor(_can_bus_1, last_command.id, pos, MOTORS[last_command.id].stiffness, 0, &m_id, &pos, &vel, &trq);
         break;
 
     default:
