@@ -18,6 +18,7 @@ void JoystickController::loop()
     PS4.begin(MAC_PS4_JOYSTICK);
     PS4.setLed(255, 0, 0);
 
+    Serial.println("🔁 Joystick begin");
     while (1) {
         if (PS4.isConnected()) {
             pos1 = PS4.LStickX();

@@ -13,11 +13,11 @@
 class MotorController
 {
 public:
-  MotorController(mcp2515_can *can1, std::vector<Command> *commands);
+  MotorController(std::vector<Command>* commands);
   void loop();
 
 private:
-  mcp2515_can *_can_bus_1;
+  mcp2515_can _can_buses[4] = { mcp2515_can(27), mcp2515_can(14), mcp2515_can(12), mcp2515_can(13) };
   std::vector<Command> *_commands;
 
   const int _delay = 10;

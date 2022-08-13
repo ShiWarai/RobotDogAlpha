@@ -11,14 +11,13 @@ void InputController::loop()
   unsigned long id;
   unsigned short pos;
 
+  Serial.println("🔁 Serial input begin");
   while (1)
   {
     while (Serial.available())
     {
       c = Serial.read();
 
-      // Read until a line return appears or last char
-      // When last character is '\n' it adds another input?!
       if ((c != '\n') && (i < msg_len - 1))
       {
         buf[i] = c;
@@ -26,7 +25,6 @@ void InputController::loop()
         continue;
       }
 
-      // TODO TESTING!!!
       switch (buf[0])
       {
       case 'a': // Start all motors
