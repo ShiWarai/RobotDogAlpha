@@ -60,13 +60,13 @@ void JoystickController::loop()
             if (sharePosesButton.turn(PS4.Share())) {
                 PS4.setRumble(10, 0);
 
-                pos1 = float(128 + pos1) / 256;
+                pos1 = float(128 + -pos1) / 256;
                 pos2 = float(128 + pos2) / 256;
-                pos3 = float(128 + pos3) / 256;
+                pos3 = float(128 + -pos3) / 256;
 
-                _commands->push_back(Command{ CONTROL, 1, pos1 });
-                _commands->push_back(Command{ CONTROL, 2, pos2 });
-                _commands->push_back(Command{ CONTROL, 3, pos3 });
+                _commands->push_back(Command{ CONTROL, 7, pos1 });
+                _commands->push_back(Command{ CONTROL, 8, pos2 });
+                _commands->push_back(Command{ CONTROL, 9, pos3 });
                 vTaskDelay(100);
             }
             else {

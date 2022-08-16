@@ -10,6 +10,8 @@
 #include "limits.hpp"
 #include "motor.hpp"
 
+#define CAN_COUNT 4
+
 class MotorController
 {
 public:
@@ -17,7 +19,7 @@ public:
   void loop();
 
 private:
-  mcp2515_can _can_buses[4] = { mcp2515_can(27), mcp2515_can(14), mcp2515_can(12), mcp2515_can(13) };
+  mcp2515_can _can_buses[CAN_COUNT] = { mcp2515_can(14), mcp2515_can(27), mcp2515_can(32), mcp2515_can(33) };
   std::vector<Command> *_commands;
 
   const int _delay = 10;

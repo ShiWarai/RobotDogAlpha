@@ -11,17 +11,11 @@ void MotorController::loop()
   unsigned long m_id;
   float pos, vel, trq;
 
-  while (_can_buses[0].begin(CAN_1000KBPS, MCP_8MHz) != CAN_OK)
-      vTaskDelay(100);
-
-  while (_can_buses[1].begin(CAN_1000KBPS, MCP_8MHz) != CAN_OK)
-      vTaskDelay(100);
-
-  //for (int i = 0; i < 4; i++)
-  //{
-  //    while(_can_buses[i].begin(CAN_1000KBPS, MCP_8MHz) != CAN_OK)
-  //        vTaskDelay(100);
-  //}
+  for (int i = 0; i < CAN_COUNT; i++)
+  {
+      while(_can_buses[i].begin(CAN_1000KBPS, MCP_8MHz) != CAN_OK)
+          vTaskDelay(100);
+  }
 
   Serial.println("🔁 Motor controller begin");
   while (1)

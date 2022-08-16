@@ -6,7 +6,7 @@
 #include "joystick_controller/joystick_controller.hpp"
 #include "motor_controller/motor_controller.hpp"
 
-Motor MOTORS[MOTORS_COUNT + 1] { NULL, Motor(0), Motor(0), Motor(0), Motor(1), Motor(1), Motor(1), Motor(2), Motor(2), Motor(2), Motor(3), Motor(3), Motor(3) };
+Motor MOTORS[MOTORS_COUNT + 1]{ NULL, Motor(0), Motor(0), Motor(0), Motor(1), Motor(1), Motor(1), Motor(2), Motor(2), Motor(2), Motor(3), Motor(3), Motor(3) };
 
 std::vector<Command> commands;
 
@@ -58,6 +58,17 @@ void setup()
   MOTORS[6].min_pos = -1.5;
   MOTORS[6].max_pos = 0.2;
   MOTORS[6].stiffness = 1;
+
+  // Back left leg
+  MOTORS[7].min_pos = 0.0 + 0.3;
+  MOTORS[7].max_pos = 0.73 + 0.2;
+  MOTORS[7].stiffness = 15;
+  MOTORS[8].min_pos = -0.5;
+  MOTORS[8].max_pos = 0.5;
+  MOTORS[8].stiffness = 12;
+  MOTORS[9].min_pos = -1.5;
+  MOTORS[9].max_pos = 0.2;
+  MOTORS[9].stiffness = 2;
 
   xTaskCreate(task_input_controller, "Input controller", 1024, NULL, 1, NULL);
   delay(5);
