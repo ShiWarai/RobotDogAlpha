@@ -6,7 +6,13 @@
 #include "joystick_controller/joystick_controller.hpp"
 #include "motor_controller/motor_controller.hpp"
 
+//Motor MOTORS[MOTORS_COUNT + 1]{ NULL, Motor(0), Motor(0), Motor(0), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+//Motor MOTORS[MOTORS_COUNT + 1]{ NULL, NULL, NULL, NULL, Motor(0), Motor(0), Motor(0), NULL, NULL, NULL, NULL, NULL, NULL };
+//Motor MOTORS[MOTORS_COUNT + 1]{ NULL, NULL, NULL, NULL, NULL, NULL, NULL, Motor(0), Motor(0), Motor(0), NULL, NULL, NULL };
+//Motor MOTORS[MOTORS_COUNT + 1]{ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, Motor(0), Motor(0), Motor(0) };
 Motor MOTORS[MOTORS_COUNT + 1]{ NULL, Motor(0), Motor(0), Motor(0), Motor(1), Motor(1), Motor(1), Motor(2), Motor(2), Motor(2), Motor(3), Motor(3), Motor(3) };
+
+//Motor MOTORS[MOTORS_COUNT + 1]{ NULL, NULL, NULL, NULL, NULL, NULL, NULL, Motor(0), Motor(0), Motor(0), Motor(1), Motor(1), Motor(1) };
 
 std::vector<Command> commands;
 
@@ -68,7 +74,18 @@ void setup()
   MOTORS[8].stiffness = 12;
   MOTORS[9].min_pos = -1.5;
   MOTORS[9].max_pos = 0.2;
-  MOTORS[9].stiffness = 2;
+  MOTORS[9].stiffness = 1;
+
+  // Back right leg
+  MOTORS[10].min_pos = 0.0 + 0.3;
+  MOTORS[10].max_pos = 0.73 + 0.2;
+  MOTORS[10].stiffness = 15;
+  MOTORS[11].min_pos = -0.5;
+  MOTORS[11].max_pos = 0.5;
+  MOTORS[11].stiffness = 12;
+  MOTORS[12].min_pos = -1.5;
+  MOTORS[12].max_pos = 0.2;
+  MOTORS[12].stiffness = 1;
 
   xTaskCreate(task_input_controller, "Input controller", 1024, NULL, 1, NULL);
   delay(5);

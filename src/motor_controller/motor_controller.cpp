@@ -1,39 +1,47 @@
 #include "motor_controller.hpp"
 
-MotorController::MotorController(std::vector<Command> *commands) {
+MotorController::MotorController(std::vector<Command>* commands) {
     this->_commands = commands;
 }
 
 void MotorController::loop()
 {
-  Command last_command;
-  extern Motor MOTORS[MOTORS_COUNT];
-  unsigned long m_id;
-  float pos, vel, trq;
+    Command last_command;
+    extern Motor MOTORS[MOTORS_COUNT];
+    unsigned long m_id;
+    float pos, vel, trq;
 
-  for (int i = 0; i < CAN_COUNT; i++)
-  {
-      while(_can_buses[i].begin(CAN_1000KBPS, MCP_8MHz) != CAN_OK)
-          vTaskDelay(100);
-  }
-
-  Serial.println("🔁 Motor controller begin");
-  while (1)
-  {
-
-    if (_commands->size() > 0)
+    for (int i = 0; i < CAN_COUNT; i++)
     {
-      last_command = _commands->back();
-      _commands->pop_back();
+        while (_can_buses[i].begin(CAN_1000KBPS, MCP_8MHz) != CAN_OK)
+            vTaskDelay(100);
     }
-    else {
-        vTaskDelay(10);
-        continue;
-    }
+
+    Serial.println("🔁 Motor controller begin");
+    while (1)
+    {
+
+        if (_commands->size() > 0)
+        {
+            last_command = _commands->back();
+            _commands->pop_back();
+        }
+        else {
+            vTaskDelay(1);
+            continue;
+        }
+
+        if (MOTORS[last_command.id]._can_id == -1)
+        {
+            vTaskDelay(1);
+            continue;
+        }
+        
 
     switch (last_command.type)
     {
     case CommandType::CONTROL:
+
         pos = min(max(last_command.value, float(0.0)), float(1.0)); // Maybe just int const...
         pos = MOTORS[last_command.id].min_pos + pos * abs(MOTORS[last_command.id].max_pos - MOTORS[last_command.id].min_pos);
 
@@ -130,7 +138,7 @@ void MotorController::loop()
     MOTORS[last_command.id].vel = vel;
     MOTORS[last_command.id].trq = trq;
 
-    vTaskDelay(10);
+    vTaskDelay(1);
   }
 }
 

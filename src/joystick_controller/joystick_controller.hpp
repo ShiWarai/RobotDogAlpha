@@ -6,7 +6,7 @@
 #include "../motor_controller/motor.hpp"
 #include <PS4Controller.h>
 
-#define MAC_PS4_JOYSTICK "c0:e4:34:4f:b0:4a"
+#define MAC_PS4_JOYSTICK "c0:e4:34:4f:b0:4d"
 
 class ClickableButton {
 private:

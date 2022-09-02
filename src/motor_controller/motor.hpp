@@ -5,7 +5,7 @@ const unsigned char MOTORS_COUNT = 12;
 class Motor
 {
 public:
-	uint8_t _can_id;
+	uint8_t _can_id = -1;
 
 	float min_pos = 0;
 	float max_pos = 0;
