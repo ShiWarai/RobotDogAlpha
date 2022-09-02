@@ -7,9 +7,53 @@ MotorController::MotorController(std::vector<Command>* commands) {
 void MotorController::loop()
 {
     Command last_command;
-    extern Motor MOTORS[MOTORS_COUNT];
+    Motor MOTORS[MOTORS_COUNT + 1]{ NULL, Motor(0), Motor(0), Motor(0), Motor(1), Motor(1), Motor(1), Motor(2), Motor(2), Motor(2), Motor(3), Motor(3), Motor(3) };
     unsigned long m_id;
     float pos, vel, trq;
+
+    // Front left leg
+    MOTORS[1].min_pos = -0.73 - 0.5;
+    MOTORS[1].max_pos = 0.0 - 0.3;
+    MOTORS[1].stiffness = 15;
+    MOTORS[2].min_pos = -0.5;
+    MOTORS[2].max_pos = 0.5;
+    MOTORS[2].stiffness = 8;
+    MOTORS[3].min_pos = 0.20;
+    MOTORS[3].max_pos = 1.5;
+    MOTORS[3].stiffness = 1;
+
+    // Front right leg
+    MOTORS[4].min_pos = 0.0 + 0.3;
+    MOTORS[4].max_pos = 0.73 + 0.5;
+    MOTORS[4].stiffness = 15;
+    MOTORS[5].min_pos = -0.5;
+    MOTORS[5].max_pos = 0.5;
+    MOTORS[5].stiffness = 8;
+    MOTORS[6].min_pos = -1.5;
+    MOTORS[6].max_pos = 0.2;
+    MOTORS[6].stiffness = 1;
+
+    // Back left leg
+    MOTORS[7].min_pos = 0.0 + 0.3;
+    MOTORS[7].max_pos = 0.73 + 0.2;
+    MOTORS[7].stiffness = 15;
+    MOTORS[8].min_pos = -0.5;
+    MOTORS[8].max_pos = 0.5;
+    MOTORS[8].stiffness = 12;
+    MOTORS[9].min_pos = -1.5;
+    MOTORS[9].max_pos = 0.2;
+    MOTORS[9].stiffness = 1;
+
+    // Back right leg
+    MOTORS[10].min_pos = 0.0 + 0.3;
+    MOTORS[10].max_pos = 0.73 + 0.2;
+    MOTORS[10].stiffness = 15;
+    MOTORS[11].min_pos = -0.5;
+    MOTORS[11].max_pos = 0.5;
+    MOTORS[11].stiffness = 12;
+    MOTORS[12].min_pos = -1.5;
+    MOTORS[12].max_pos = 0.2;
+    MOTORS[12].stiffness = 1;
 
     for (int i = 0; i < CAN_COUNT; i++)
     {
@@ -42,13 +86,23 @@ void MotorController::loop()
     {
     case CommandType::CONTROL:
 
-        pos = min(max(last_command.value, float(0.0)), float(1.0)); // Maybe just int const...
-        pos = MOTORS[last_command.id].min_pos + pos * abs(MOTORS[last_command.id].max_pos - MOTORS[last_command.id].min_pos);
+        //pos = min(max(last_command.value, float(0.0)), float(1.0));
 
+        // or...
+
+        if (last_command.value < 0)
+            last_command.value = 0;
+        else last_command.value > 1
+            last_command.value = 1;
+
+        pos = MOTORS[last_command.id].min_pos + pos * abs(MOTORS[last_command.id].max_pos - MOTORS[last_command.id].min_pos);
+        
+        /*
         Serial.print("Move to ");
         Serial.print(pos);
         Serial.print(" with stiffness ");
         Serial.println(MOTORS[last_command.id].stiffness);
+        */
 
         _control_motor(&_can_buses[MOTORS[last_command.id]._can_id], last_command.id, pos, MOTORS[last_command.id].stiffness, 0, &m_id, &pos, &vel, &trq);
         break;

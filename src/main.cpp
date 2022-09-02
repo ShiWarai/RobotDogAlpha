@@ -10,7 +10,7 @@
 //Motor MOTORS[MOTORS_COUNT + 1]{ NULL, NULL, NULL, NULL, Motor(0), Motor(0), Motor(0), NULL, NULL, NULL, NULL, NULL, NULL };
 //Motor MOTORS[MOTORS_COUNT + 1]{ NULL, NULL, NULL, NULL, NULL, NULL, NULL, Motor(0), Motor(0), Motor(0), NULL, NULL, NULL };
 //Motor MOTORS[MOTORS_COUNT + 1]{ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, Motor(0), Motor(0), Motor(0) };
-Motor MOTORS[MOTORS_COUNT + 1]{ NULL, Motor(0), Motor(0), Motor(0), Motor(1), Motor(1), Motor(1), Motor(2), Motor(2), Motor(2), Motor(3), Motor(3), Motor(3) };
+//Motor MOTORS[MOTORS_COUNT + 1]{ NULL, Motor(0), Motor(0), Motor(0), Motor(1), Motor(1), Motor(1), Motor(2), Motor(2), Motor(2), Motor(3), Motor(3), Motor(3) };
 
 //Motor MOTORS[MOTORS_COUNT + 1]{ NULL, NULL, NULL, NULL, NULL, NULL, NULL, Motor(0), Motor(0), Motor(0), Motor(1), Motor(1), Motor(1) };
 
@@ -29,7 +29,7 @@ void task_input_controller(void *p)
 void task_joystick_controller(void* p)
 {
     
-    joystick_controller.loop(); 
+  joystick_controller.loop(); 
 }
 
 void task_motor_controller(void *p)
@@ -40,52 +40,6 @@ void task_motor_controller(void *p)
 void setup()
 {
   Serial.begin(115200);
-
-  // Set max and min - DEBUG
-
-  // Front left leg
-  MOTORS[1].min_pos = -0.73 - 0.5;
-  MOTORS[1].max_pos = 0.0 - 0.3;
-  MOTORS[1].stiffness = 15;
-  MOTORS[2].min_pos = -0.5;
-  MOTORS[2].max_pos = 0.5;
-  MOTORS[2].stiffness = 8;
-  MOTORS[3].min_pos = 0.20;
-  MOTORS[3].max_pos = 1.5;
-  MOTORS[3].stiffness = 1;
-
-  // Front right leg
-  MOTORS[4].min_pos = 0.0 + 0.3;
-  MOTORS[4].max_pos = 0.73 + 0.5;
-  MOTORS[4].stiffness = 15;
-  MOTORS[5].min_pos = -0.5;
-  MOTORS[5].max_pos = 0.5;
-  MOTORS[5].stiffness = 8;
-  MOTORS[6].min_pos = -1.5;
-  MOTORS[6].max_pos = 0.2;
-  MOTORS[6].stiffness = 1;
-
-  // Back left leg
-  MOTORS[7].min_pos = 0.0 + 0.3;
-  MOTORS[7].max_pos = 0.73 + 0.2;
-  MOTORS[7].stiffness = 15;
-  MOTORS[8].min_pos = -0.5;
-  MOTORS[8].max_pos = 0.5;
-  MOTORS[8].stiffness = 12;
-  MOTORS[9].min_pos = -1.5;
-  MOTORS[9].max_pos = 0.2;
-  MOTORS[9].stiffness = 1;
-
-  // Back right leg
-  MOTORS[10].min_pos = 0.0 + 0.3;
-  MOTORS[10].max_pos = 0.73 + 0.2;
-  MOTORS[10].stiffness = 15;
-  MOTORS[11].min_pos = -0.5;
-  MOTORS[11].max_pos = 0.5;
-  MOTORS[11].stiffness = 12;
-  MOTORS[12].min_pos = -1.5;
-  MOTORS[12].max_pos = 0.2;
-  MOTORS[12].stiffness = 1;
 
   xTaskCreate(task_input_controller, "Input controller", 1024, NULL, 1, NULL);
   delay(5);
