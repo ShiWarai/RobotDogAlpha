@@ -1,6 +1,7 @@
 #include <vector>
 #include <Arduino.h>
 #include <mcp2515_can.h>
+#include "freertos/semphr.h"
 
 #include "input_controller/input_controller.hpp"
 #include "joystick_controller/joystick_controller.hpp"
@@ -15,6 +16,7 @@
 //Motor MOTORS[MOTORS_COUNT + 1]{ NULL, NULL, NULL, NULL, NULL, NULL, NULL, Motor(0), Motor(0), Motor(0), Motor(1), Motor(1), Motor(1) };
 
 std::vector<Command> commands;
+SemaphoreHandle_t commands_ready = xSemaphoreCreateBinary();
 
 InputController input_controller(&commands);
 JoystickController joystick_controller(&commands);

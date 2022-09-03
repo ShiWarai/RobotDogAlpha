@@ -10,6 +10,7 @@ void InputController::loop()
   uint8_t i = 0;          // Current message chars position
   unsigned long id;
   unsigned short pos;
+  extern SemaphoreHandle_t commands_ready;
 
   Serial.println("🔁 Serial input begin");
   while (1)
@@ -126,6 +127,10 @@ void InputController::loop()
       // Reset the message
       memset(buf, 0, sizeof(buf));
       i = 0;
+
+      xSemaphoreGive(commands_ready);
+      vTaskDelay(100);
+      xSemaphoreTake(commands_ready, portMAX_DELAY);
     }
 
     vTaskDelay(1);

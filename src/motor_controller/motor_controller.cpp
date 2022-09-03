@@ -10,50 +10,51 @@ void MotorController::loop()
     Motor MOTORS[MOTORS_COUNT + 1]{ NULL, Motor(0), Motor(0), Motor(0), Motor(1), Motor(1), Motor(1), Motor(2), Motor(2), Motor(2), Motor(3), Motor(3), Motor(3) };
     unsigned long m_id;
     float pos, vel, trq;
+    extern SemaphoreHandle_t commands_ready;
 
     // Front left leg
     MOTORS[1].min_pos = -0.73 - 0.5;
     MOTORS[1].max_pos = 0.0 - 0.3;
-    MOTORS[1].stiffness = 15;
-    MOTORS[2].min_pos = -0.5;
-    MOTORS[2].max_pos = 0.5;
+    MOTORS[1].stiffness = 6;
+    MOTORS[2].min_pos = -0.7;
+    MOTORS[2].max_pos = 0.7;
     MOTORS[2].stiffness = 8;
     MOTORS[3].min_pos = 0.20;
     MOTORS[3].max_pos = 1.5;
-    MOTORS[3].stiffness = 1;
+    MOTORS[3].stiffness = 2;
 
     // Front right leg
     MOTORS[4].min_pos = 0.0 + 0.3;
     MOTORS[4].max_pos = 0.73 + 0.5;
-    MOTORS[4].stiffness = 15;
-    MOTORS[5].min_pos = -0.5;
-    MOTORS[5].max_pos = 0.5;
+    MOTORS[4].stiffness = 6;
+    MOTORS[5].min_pos = -0.7;
+    MOTORS[5].max_pos = 0.7;
     MOTORS[5].stiffness = 8;
     MOTORS[6].min_pos = -1.5;
     MOTORS[6].max_pos = 0.2;
-    MOTORS[6].stiffness = 1;
+    MOTORS[6].stiffness = 2;
 
     // Back left leg
     MOTORS[7].min_pos = 0.0 + 0.3;
     MOTORS[7].max_pos = 0.73 + 0.2;
-    MOTORS[7].stiffness = 15;
-    MOTORS[8].min_pos = -0.5;
-    MOTORS[8].max_pos = 0.5;
+    MOTORS[7].stiffness = 6;
+    MOTORS[8].min_pos = -0.7;
+    MOTORS[8].max_pos = 0.7;
     MOTORS[8].stiffness = 12;
     MOTORS[9].min_pos = -1.5;
     MOTORS[9].max_pos = 0.2;
-    MOTORS[9].stiffness = 1;
+    MOTORS[9].stiffness = 2;
 
     // Back right leg
     MOTORS[10].min_pos = 0.0 + 0.3;
     MOTORS[10].max_pos = 0.73 + 0.2;
-    MOTORS[10].stiffness = 15;
-    MOTORS[11].min_pos = -0.5;
-    MOTORS[11].max_pos = 0.5;
+    MOTORS[10].stiffness = 6;
+    MOTORS[11].min_pos = -0.7;
+    MOTORS[11].max_pos = 0.7;
     MOTORS[11].stiffness = 12;
     MOTORS[12].min_pos = -1.5;
     MOTORS[12].max_pos = 0.2;
-    MOTORS[12].stiffness = 1;
+    MOTORS[12].stiffness = 2;
 
     for (int i = 0; i < CAN_COUNT; i++)
     {
@@ -64,136 +65,146 @@ void MotorController::loop()
     Serial.println("🔁 Motor controller begin");
     while (1)
     {
+        if (xSemaphoreTake(commands_ready, portMAX_DELAY)) {
+            while (_commands->size() > 0) {
+                last_command = _commands->back();
+                _commands->pop_back();
 
-        if (_commands->size() > 0)
-        {
-            last_command = _commands->back();
-            _commands->pop_back();
-        }
-        else {
+                if (MOTORS[last_command.id]._can_id == -1)
+                {
+                    vTaskDelay(1);
+                    continue;
+                }
+
+                switch (last_command.type)
+                {
+                case CommandType::CONTROL:
+
+                    pos = min(max(last_command.value, float(0.0)), float(1.0));
+
+                    // or...
+
+                    /*
+                    if (last_command.value < 0)
+                        pos = 0;
+                    else if (last_command.value > 1)
+                        pos = 1;
+                    else
+                        pos = last_command.value;
+                    */
+
+                    pos = MOTORS[last_command.id].min_pos + pos * abs(MOTORS[last_command.id].max_pos - MOTORS[last_command.id].min_pos);
+
+                    /*
+                    Serial.print("Move to ");
+                    Serial.print(pos);
+                    Serial.print(" with stiffness ");
+                    Serial.println(MOTORS[last_command.id].stiffness);
+                    */
+
+                    _control_motor(&_can_buses[MOTORS[last_command.id]._can_id], last_command.id, pos, MOTORS[last_command.id].stiffness, 0, &m_id, &pos, &vel, &trq);
+                    break;
+
+                case CommandType::MOTOR_NONE:
+                    Serial.println("Set none");
+                    _control_motor(&_can_buses[MOTORS[last_command.id]._can_id], last_command.id, 0, 0, 0, &m_id, &pos, &vel, &trq);
+                    break;
+
+                case CommandType::MOTOR_ON:
+                    Serial.println("Motor start");
+                    _start_motor(&_can_buses[MOTORS[last_command.id]._can_id], last_command.id, &m_id, &pos, &vel, &trq);
+                    break;
+
+                case CommandType::MOTOR_OFF:
+                    Serial.println("Motor stop");
+                    _control_motor(&_can_buses[MOTORS[last_command.id]._can_id], last_command.id, 0, 0, 0, &m_id, &pos, &vel, &trq);
+                    _stop_motor(&_can_buses[MOTORS[last_command.id]._can_id], last_command.id, &m_id, &pos, &vel, &trq);
+                    break;
+
+                case CommandType::SET_ORIGIN:
+                    Serial.println("Motor zero");
+                    _zero_motor(&_can_buses[MOTORS[last_command.id]._can_id], last_command.id, &m_id, &pos, &vel, &trq);
+                    break;
+
+                case CommandType::CHECK:
+                    Serial.print("Check motor ");
+                    Serial.println(last_command.id);
+
+                    _check_motor(&_can_buses[MOTORS[last_command.id]._can_id], last_command.id, &m_id, &pos, &vel, &trq);
+
+                    Serial.print("motor id: ");
+                    Serial.print(m_id);
+                    Serial.print(" pos: ");
+                    Serial.print(pos);
+                    Serial.print(" vel: ");
+                    Serial.print(vel);
+                    Serial.print(" trq : ");
+                    Serial.print(trq);
+                    Serial.print(" min : ");
+                    Serial.print(MOTORS[last_command.id].min_pos);
+                    Serial.print(" max : ");
+                    Serial.print(MOTORS[last_command.id].max_pos);
+                    Serial.println();
+                    Serial.println();
+                    break;
+
+                case CommandType::SET_MIN:
+                    Serial.println("Set low!");
+
+                    _check_motor(&_can_buses[MOTORS[last_command.id]._can_id], last_command.id, &m_id, &pos, &vel, &trq);
+
+                    MOTORS[last_command.id].min_pos = pos;
+                    Serial.print("New min: ");
+                    Serial.println(MOTORS[last_command.id].min_pos);
+                    break;
+
+                case CommandType::SET_MAX:
+                    Serial.println("Set max!");
+
+                    _check_motor(&_can_buses[MOTORS[last_command.id]._can_id], last_command.id, &m_id, &pos, &vel, &trq);
+
+                    MOTORS[last_command.id].max_pos = pos;
+                    Serial.print("New max: ");
+                    Serial.println(MOTORS[last_command.id].max_pos);
+                    break;
+
+                case CommandType::MOVE_MIN:
+                    Serial.print("Move to min: ");
+                    Serial.println(MOTORS[last_command.id].min_pos);
+
+                    _control_motor(&_can_buses[MOTORS[last_command.id]._can_id], last_command.id, MOTORS[last_command.id].min_pos, MOTORS[last_command.id].stiffness, 0, &m_id, &pos, &vel, &trq);
+                    break;
+
+                case CommandType::MOVE_MAX:
+                    Serial.print("Move to high: ");
+                    Serial.println(MOTORS[last_command.id].max_pos);
+
+                    _control_motor(&_can_buses[MOTORS[last_command.id]._can_id], last_command.id, MOTORS[last_command.id].max_pos, MOTORS[last_command.id].stiffness, 0, &m_id, &pos, &vel, &trq);
+                    break;
+
+                default:
+                    break;
+                }
+
+                MOTORS[last_command.id].pos = pos;
+                MOTORS[last_command.id].vel = vel;
+                MOTORS[last_command.id].trq = trq;
+
+                /*
+                Serial.println();
+                Serial.println(pos);
+                Serial.println(vel);
+                Serial.println(trq);
+                Serial.println();
+                */
+            }
+
+            xSemaphoreGive(commands_ready);
             vTaskDelay(1);
-            continue;
         }
 
-        if (MOTORS[last_command.id]._can_id == -1)
-        {
-            vTaskDelay(1);
-            continue;
-        }
-        
-
-    switch (last_command.type)
-    {
-    case CommandType::CONTROL:
-
-        //pos = min(max(last_command.value, float(0.0)), float(1.0));
-
-        // or...
-
-        if (last_command.value < 0)
-            last_command.value = 0;
-        else last_command.value > 1
-            last_command.value = 1;
-
-        pos = MOTORS[last_command.id].min_pos + pos * abs(MOTORS[last_command.id].max_pos - MOTORS[last_command.id].min_pos);
-        
-        /*
-        Serial.print("Move to ");
-        Serial.print(pos);
-        Serial.print(" with stiffness ");
-        Serial.println(MOTORS[last_command.id].stiffness);
-        */
-
-        _control_motor(&_can_buses[MOTORS[last_command.id]._can_id], last_command.id, pos, MOTORS[last_command.id].stiffness, 0, &m_id, &pos, &vel, &trq);
-        break;
-
-    case CommandType::MOTOR_NONE:
-      Serial.println("Set none");
-      _control_motor(&_can_buses[MOTORS[last_command.id]._can_id], last_command.id, 0, 0, 0, &m_id, &pos, &vel, &trq);
-      break;
-
-    case CommandType::MOTOR_ON:
-      Serial.println("Motor start");
-      _start_motor(&_can_buses[MOTORS[last_command.id]._can_id], last_command.id, &m_id, &pos, &vel, &trq);
-      break;
-
-    case CommandType::MOTOR_OFF:
-      Serial.println("Motor stop");
-      _control_motor(&_can_buses[MOTORS[last_command.id]._can_id], last_command.id, 0, 0, 0, &m_id, &pos, &vel, &trq);
-      _stop_motor(&_can_buses[MOTORS[last_command.id]._can_id], last_command.id, &m_id, &pos, &vel, &trq);
-      break;
-
-    case CommandType::SET_ORIGIN:
-      Serial.println("Motor zero");
-      _zero_motor(&_can_buses[MOTORS[last_command.id]._can_id], last_command.id, &m_id, &pos, &vel, &trq);
-      break;
-
-    case CommandType::CHECK:
-      Serial.print("Check motor ");
-      Serial.println(last_command.id);
-
-        _check_motor(&_can_buses[MOTORS[last_command.id]._can_id], last_command.id, &m_id, &pos, &vel, &trq);
-
-        Serial.print("motor id: ");
-        Serial.print(m_id);
-        Serial.print(" pos: ");
-        Serial.print(pos);
-        Serial.print(" vel: ");
-        Serial.print(vel);
-        Serial.print(" trq : ");
-        Serial.print(trq);
-        Serial.print(" min : ");
-        Serial.print(MOTORS[last_command.id].min_pos);
-        Serial.print(" max : ");
-        Serial.print(MOTORS[last_command.id].max_pos);
-        Serial.println();
-        Serial.println();
-        break;
-
-    case CommandType::SET_MIN:
-        Serial.println("Set low!");
-
-        _check_motor(&_can_buses[MOTORS[last_command.id]._can_id], last_command.id, &m_id, &pos, &vel, &trq);
-
-        MOTORS[last_command.id].min_pos = pos;
-        Serial.print("New min: ");
-        Serial.println(MOTORS[last_command.id].min_pos);
-        break;
-
-    case CommandType::SET_MAX:
-        Serial.println("Set max!");
-
-        _check_motor(&_can_buses[MOTORS[last_command.id]._can_id], last_command.id, &m_id, &pos, &vel, &trq);
-
-        MOTORS[last_command.id].max_pos = pos;
-        Serial.print("New max: ");
-        Serial.println(MOTORS[last_command.id].max_pos);
-        break;
-
-    case CommandType::MOVE_MIN:
-        Serial.print("Move to min: ");
-        Serial.println(MOTORS[last_command.id].min_pos);
-
-        _control_motor(&_can_buses[MOTORS[last_command.id]._can_id], last_command.id, MOTORS[last_command.id].min_pos, MOTORS[last_command.id].stiffness, 0, &m_id, &pos, &vel, &trq);
-        break;
-
-    case CommandType::MOVE_MAX:
-        Serial.print("Move to high: ");
-        Serial.println(MOTORS[last_command.id].max_pos);
-
-        _control_motor(&_can_buses[MOTORS[last_command.id]._can_id], last_command.id, MOTORS[last_command.id].max_pos, MOTORS[last_command.id].stiffness, 0, &m_id, &pos, &vel, &trq);
-        break;
-
-    default:
-      break;
+        vTaskDelay(1);
     }
-
-    MOTORS[last_command.id].pos = pos;
-    MOTORS[last_command.id].vel = vel;
-    MOTORS[last_command.id].trq = trq;
-
-    vTaskDelay(1);
-  }
 }
 
 void MotorController::_start_motor(mcp2515_can *can, unsigned long id,                            // CAN bus and CAN ID

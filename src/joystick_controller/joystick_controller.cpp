@@ -14,6 +14,7 @@ void JoystickController::loop()
     ButtonWithState sharePosesButton;
     ClickableButton setOriginButton;
     ClickableButton moveToOriginButton;
+    extern SemaphoreHandle_t commands_ready;
 
     PS4.begin(MAC_PS4_JOYSTICK);
     PS4.setLed(255, 0, 0);
@@ -33,6 +34,10 @@ void JoystickController::loop()
                     for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
                         _commands->push_back(Command{ MOTOR_ON, i, 0 });
 
+                    xSemaphoreGive(commands_ready);
+                    vTaskDelay(100);
+                    xSemaphoreTake(commands_ready, portMAX_DELAY);
+
                     motorOnLast = true;
                 }
             }
@@ -43,6 +48,10 @@ void JoystickController::loop()
                     for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
                         _commands->push_back(Command{ MOTOR_OFF, i, 0 });
 
+                    xSemaphoreGive(commands_ready);
+                    vTaskDelay(100);
+                    xSemaphoreTake(commands_ready, portMAX_DELAY);
+
                     motorOnLast = false;
                 }
             }
@@ -50,11 +59,19 @@ void JoystickController::loop()
             if (moveToOriginButton.turn(PS4.Circle())) {
                 for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
                     _commands->push_back(Command{ MOTOR_NONE, i, 0 });
+
+                xSemaphoreGive(commands_ready);
+                vTaskDelay(100);
+                xSemaphoreTake(commands_ready, portMAX_DELAY);
             }
 
             if (setOriginButton.turn(PS4.Options())) {
                 for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
                     _commands->push_back(Command{ SET_ORIGIN, i, 0 });
+
+                xSemaphoreGive(commands_ready);
+                vTaskDelay(100);
+                xSemaphoreTake(commands_ready, portMAX_DELAY);
             } 
 
             if (sharePosesButton.turn(PS4.Share())) {
@@ -84,7 +101,9 @@ void JoystickController::loop()
                 _commands->push_back(Command{ CONTROL, 11, n_pos2 });
                 _commands->push_back(Command{ CONTROL, 12, n_pos3 });
 
-                vTaskDelay(1000);
+                xSemaphoreGive(commands_ready);
+                vTaskDelay(100);
+                xSemaphoreTake(commands_ready, portMAX_DELAY);
             }
             else {
                 PS4.setRumble(0, 0);

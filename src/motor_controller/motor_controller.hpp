@@ -5,6 +5,7 @@
 #include <mcp2515_can.h>
 
 #include "input_controller/command.hpp"
+#include "freertos/semphr.h"
 
 #include "commands.hpp"
 #include "limits.hpp"
@@ -22,7 +23,7 @@ private:
   mcp2515_can _can_buses[CAN_COUNT] = { mcp2515_can(33), mcp2515_can(32), mcp2515_can(27), mcp2515_can(14) };
   std::vector<Command> *_commands;
 
-  const int _delay = 32;
+  const int _delay = 10;
 
   void _start_motor(mcp2515_can *can, unsigned long id,                             // CAN bus and CAN ID
                     unsigned long *m_id, float *m_pos, float *m_vel, float *m_trq); // Motor parameters
