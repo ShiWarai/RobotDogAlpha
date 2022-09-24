@@ -10,6 +10,7 @@ void InputController::loop()
   uint8_t i = 0;          // Current message chars position
   unsigned long id;
   unsigned short pos;
+  extern SemaphoreHandle_t commands_ready;
 
   Serial.println("🔁 Serial input begin");
   while (1)
@@ -18,7 +19,7 @@ void InputController::loop()
     {
       c = Serial.read();
 
-      if ((c != '\n') && (i < msg_len - 1))
+      if ((c != '\r') && (i < msg_len - 1))
       {
         buf[i] = c;
         i++;
@@ -28,20 +29,47 @@ void InputController::loop()
       switch (buf[0])
       {
       case 'a': // Start all motors
-        for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
-            _commands->push_back(Command{MOTOR_ON, i, 0});
-        break;
+          if (i > 1)
+          {
+              id = (buf[1] - 48) * 10 + (buf[2] - 48);
+
+              if (id <= 0 || id > MOTORS_COUNT)
+              {
+                  Serial.println("Wrong id!");
+                  break;
+              }
+
+              _commands->push_back(Command{ MOTOR_ON, id, 0 });
+          } else {
+              for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
+                  _commands->push_back(Command{ MOTOR_ON, i, 0 });
+          }
+          break;
 
       case 'b': // Stop all motors
-        for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
-            _commands->push_back(Command{MOTOR_OFF, i, 0});
-        break;
+          if (i > 1)
+          {
+              id = (buf[1] - 48) * 10 + (buf[2] - 48);
+
+              if (id <= 0 || id > MOTORS_COUNT)
+              {
+                  Serial.println("Wrong id!");
+                  break;
+              }
+
+              _commands->push_back(Command{ MOTOR_OFF, id, 0 });
+          }
+          else {
+              for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
+                  _commands->push_back(Command{ MOTOR_OFF, i, 0 });
+          }
+          break;
 
       case 'c': // Check a motor
       {
           id = (buf[1] - 48) * 10 + (buf[2] - 48);
 
-          if (id <= 0 || id >= 100)
+          if (id <= 0 || id > MOTORS_COUNT)
           {
               Serial.println("Wrong id!");
               break;
@@ -52,9 +80,23 @@ void InputController::loop()
       }
 
       case 'f': // Zero all motors
-        for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
-            _commands->push_back(Command{SET_ORIGIN, i, 0});
-        break;
+          if (i > 1)
+          {
+              id = (buf[1] - 48) * 10 + (buf[2] - 48);
+
+              if (id <= 0 || id > MOTORS_COUNT)
+              {
+                  Serial.println("Wrong id!");
+                  break;
+              }
+
+              _commands->push_back(Command{ SET_ORIGIN, id, 0 });
+          }
+          else {
+              for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
+                  _commands->push_back(Command{ SET_ORIGIN, i, 0 });
+          }
+          break;
 
       case 'l':
           id = (buf[1] - 48) * 10 + (buf[2] - 48);
@@ -126,6 +168,10 @@ void InputController::loop()
       // Reset the message
       memset(buf, 0, sizeof(buf));
       i = 0;
+
+      xSemaphoreGive(commands_ready);
+      vTaskDelay(100);
+      xSemaphoreTake(commands_ready, portMAX_DELAY);
     }
 
     vTaskDelay(1);

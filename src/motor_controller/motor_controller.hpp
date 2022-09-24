@@ -5,12 +5,13 @@
 #include <mcp2515_can.h>
 
 #include "input_controller/command.hpp"
+#include "freertos/semphr.h"
 
 #include "commands.hpp"
 #include "limits.hpp"
 #include "motor.hpp"
 
-#define CAN_COUNT 4
+#define CAN_COUNT 1
 
 class MotorController
 {
@@ -19,10 +20,10 @@ public:
   void loop();
 
 private:
-  mcp2515_can _can_buses[CAN_COUNT] = { mcp2515_can(33), mcp2515_can(32), mcp2515_can(27), mcp2515_can(14) };
+  mcp2515_can _can_buses[CAN_COUNT] = { mcp2515_can(33) };
   std::vector<Command> *_commands;
 
-  const int _delay = 10;
+  const int _delay = 8;
 
   void _start_motor(mcp2515_can *can, unsigned long id,                             // CAN bus and CAN ID
                     unsigned long *m_id, float *m_pos, float *m_vel, float *m_trq); // Motor parameters
