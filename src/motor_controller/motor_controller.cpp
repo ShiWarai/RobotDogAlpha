@@ -7,7 +7,10 @@ MotorController::MotorController(std::vector<Command>* commands) {
 void MotorController::loop()
 {
     Command last_command;
-    Motor MOTORS[MOTORS_COUNT + 1]{ NULL, Motor(0), Motor(0), Motor(0), Motor(1), Motor(1), Motor(1), Motor(2), Motor(2), Motor(2), Motor(3), Motor(3), Motor(3) };
+    //Motor MOTORS[MOTORS_COUNT + 1]{ NULL, Motor(0), Motor(0), Motor(0), Motor(1), Motor(1), Motor(1), Motor(2), Motor(2), Motor(2), Motor(3), Motor(3), Motor(3)};
+    //Motor MOTORS[MOTORS_COUNT + 1]{ NULL, Motor(0), Motor(0), Motor(0), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+    //MOTORS[MOTORS_COUNT + 1]{ NULL,  NULL, NULL, NULL, Motor(0), Motor(0), Motor(0), Motor(1), Motor(1), Motor(1), Motor(2), Motor(2), Motor(2)};
+    Motor MOTORS[MOTORS_COUNT + 1]{ NULL, Motor(0), Motor(0), Motor(0), Motor(0), Motor(0), Motor(0), Motor(), Motor(), Motor(), Motor(), Motor(), Motor() };
     unsigned long m_id;
     float pos, vel, trq;
     extern SemaphoreHandle_t commands_ready;
@@ -190,13 +193,12 @@ void MotorController::loop()
                 MOTORS[last_command.id].vel = vel;
                 MOTORS[last_command.id].trq = trq;
 
-                /*
-                Serial.println();
+                Serial.print(last_command.id);
+                Serial.print(": ");
                 Serial.println(pos);
                 Serial.println(vel);
                 Serial.println(trq);
                 Serial.println();
-                */
             }
 
             xSemaphoreGive(commands_ready);
@@ -239,11 +241,8 @@ void MotorController::_check_motor(mcp2515_can *can, unsigned long id,          
 {
   _can_pack(can, id, 0, 0, 0);
   vTaskDelay(_delay);
-  do // DANGER!! Risk of an infinite loop present!
-  {
-    _can_unpack(can, id, m_id, m_pos, m_vel, m_trq);
-    vTaskDelay(_delay);
-  } while (id != *m_id);
+  _can_unpack(can, id, m_id, m_pos, m_vel, m_trq);
+  vTaskDelay(_delay);
 }
 
 void MotorController::_control_motor(mcp2515_can *can, unsigned long id,                            // CAN bus and CAN ID
