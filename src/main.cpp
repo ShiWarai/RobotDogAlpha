@@ -8,9 +8,9 @@
 #include <mcp2515_can.h>
 
 #define CAN_COUNT 1
-mcp2515_can _can_buses[CAN_COUNT] = { mcp2515_can(33) };
+#define DELAY 8
 
-const uint8_t _delay = 8;
+mcp2515_can _can_buses[CAN_COUNT] = { mcp2515_can(33) };
 
 Motor MOTORS[MOTORS_COUNT + 1]{ NULL, Motor(0), Motor(0), Motor(0), Motor(), Motor(), Motor(), Motor(), Motor(), Motor(), Motor(), Motor(), Motor() };
 
@@ -99,7 +99,7 @@ void loop()
 	Serial.println("Start!");
 
 	for(unsigned long id = 1; id < MOTORS_COUNT; id++) {
-		vTaskDelay(_delay);
+		vTaskDelay(DELAY);
 		if(MOTORS[id]._can_id == -1)
 			break;
 
@@ -108,7 +108,7 @@ void loop()
 	}
 
 	for(unsigned long id = 1; id < MOTORS_COUNT; id++) {
-		vTaskDelay(_delay);
+		vTaskDelay(DELAY);
 		if(MOTORS[id]._can_id == -1)
 			break;
 
@@ -117,7 +117,7 @@ void loop()
 	}
 
 	for(unsigned long id = 1; id < MOTORS_COUNT; id++) {
-		vTaskDelay(_delay);
+		vTaskDelay(DELAY);
 		if(MOTORS[id]._can_id == -1)
 			break;
 
@@ -145,13 +145,13 @@ void loop()
 	}
 
 	for(unsigned long id = 1; id < MOTORS_COUNT; id++) {
-		vTaskDelay(_delay);
+		vTaskDelay(DELAY);
 		if(MOTORS[id]._can_id == -1)
 			break;
 
 		Serial.println("Motor stop");
 		_control_motor(&_can_buses[MOTORS[id]._can_id], id, 0, 0, 0, &m_id, &pos, &vel, &trq);
-		vTaskDelay(_delay);
+		vTaskDelay(DELAY);
 		_stop_motor(&_can_buses[MOTORS[id]._can_id], id, &m_id, &pos, &vel, &trq);
 	}
 
@@ -170,27 +170,27 @@ void _start_motor(mcp2515_can *can, unsigned long id,                           
 								   unsigned long *m_id, float *m_pos, float *m_vel, float *m_trq) // Motor parameters
 {
   can->sendMsgBuf(id, 0, 8, START_MOTOR);
-  vTaskDelay(_delay);
+  vTaskDelay(DELAY);
   _can_unpack(can, id, m_id, m_pos, m_vel, m_trq);
-  vTaskDelay(_delay);
+  vTaskDelay(DELAY);
 }
 
 void _stop_motor(mcp2515_can *can, unsigned long id,                            // CAN bus and CAN ID
 								  unsigned long *m_id, float *m_pos, float *m_vel, float *m_trq) // Motor parameters
 {
   can->sendMsgBuf(id, 0, 8, STOP_MOTOR);
-  vTaskDelay(_delay);
+  vTaskDelay(DELAY);
   _can_unpack(can, id, m_id, m_pos, m_vel, m_trq);
-  vTaskDelay(_delay);
+  vTaskDelay(DELAY);
 }
 
 void _zero_motor(mcp2515_can *can, unsigned long id,                            // CAN bus and CAN ID
 								  unsigned long *m_id, float *m_pos, float *m_vel, float *m_trq) // Motor parameters
 {
   can->sendMsgBuf(id, 0, 8, SET_ZERO);
-  vTaskDelay(_delay);
+  vTaskDelay(DELAY);
   _can_unpack(can, id, m_id, m_pos, m_vel, m_trq);
-  vTaskDelay(_delay);
+  vTaskDelay(DELAY);
 }
 
 void _control_motor(mcp2515_can *can, unsigned long id,                            // CAN bus and CAN ID
@@ -198,9 +198,9 @@ void _control_motor(mcp2515_can *can, unsigned long id,                         
 									 unsigned long *m_id, float *m_pos, float *m_vel, float *m_trq) // Motor parameters
 {
   _can_pack(can, id, new_position, new_stiffness, new_damper);
-  vTaskDelay(_delay);
+  vTaskDelay(DELAY);
   _can_unpack(can, id, m_id, m_pos, m_vel, m_trq);
-  vTaskDelay(_delay);
+  vTaskDelay(DELAY);
 }
 
 unsigned int _float_to_uint(float x, float x_min, float x_max, float bits)
