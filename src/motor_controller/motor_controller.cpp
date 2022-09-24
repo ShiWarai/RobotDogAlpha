@@ -7,9 +7,6 @@ MotorController::MotorController(std::vector<Command>* commands) {
 void MotorController::loop()
 {
     Command last_command;
-    //Motor MOTORS[MOTORS_COUNT + 1]{ NULL, Motor(0), Motor(0), Motor(0), Motor(1), Motor(1), Motor(1), Motor(2), Motor(2), Motor(2), Motor(3), Motor(3), Motor(3)};
-    //Motor MOTORS[MOTORS_COUNT + 1]{ NULL, Motor(0), Motor(0), Motor(0), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-    //MOTORS[MOTORS_COUNT + 1]{ NULL,  NULL, NULL, NULL, Motor(0), Motor(0), Motor(0), Motor(1), Motor(1), Motor(1), Motor(2), Motor(2), Motor(2)};
     Motor MOTORS[MOTORS_COUNT + 1]{ NULL, Motor(0), Motor(0), Motor(0), Motor(0), Motor(0), Motor(0), Motor(), Motor(), Motor(), Motor(), Motor(), Motor() };
     unsigned long m_id;
     float pos, vel, trq;
