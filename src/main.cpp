@@ -7,14 +7,6 @@
 #include "joystick_controller/joystick_controller.hpp"
 #include "motor_controller/motor_controller.hpp"
 
-//Motor MOTORS[MOTORS_COUNT + 1]{ NULL, Motor(0), Motor(0), Motor(0), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-//Motor MOTORS[MOTORS_COUNT + 1]{ NULL, NULL, NULL, NULL, Motor(0), Motor(0), Motor(0), NULL, NULL, NULL, NULL, NULL, NULL };
-//Motor MOTORS[MOTORS_COUNT + 1]{ NULL, NULL, NULL, NULL, NULL, NULL, NULL, Motor(0), Motor(0), Motor(0), NULL, NULL, NULL };
-//Motor MOTORS[MOTORS_COUNT + 1]{ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, Motor(0), Motor(0), Motor(0) };
-//Motor MOTORS[MOTORS_COUNT + 1]{ NULL, Motor(0), Motor(0), Motor(0), Motor(1), Motor(1), Motor(1), Motor(2), Motor(2), Motor(2), Motor(3), Motor(3), Motor(3) };
-
-//Motor MOTORS[MOTORS_COUNT + 1]{ NULL, NULL, NULL, NULL, NULL, NULL, NULL, Motor(0), Motor(0), Motor(0), Motor(1), Motor(1), Motor(1) };
-
 std::vector<Command> commands;
 SemaphoreHandle_t commands_ready = xSemaphoreCreateBinary();
 
