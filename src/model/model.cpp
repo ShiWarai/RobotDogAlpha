@@ -17,8 +17,6 @@ bool Model::init() {
     Model::motors[11] = Motor();
     Model::motors[12] = Motor();
 
-    Serial.println("Legs...");
-
     // Front left leg
     Model::motors[1].min_pos = -0.73 - 0.5;
     Model::motors[1].max_pos = 0.0 - 0.3;
@@ -63,7 +61,6 @@ bool Model::init() {
     Model::motors[12].max_pos = 0.2;
     Model::motors[12].kp = 2;
 
-    Serial.println("End of init");
     return true;
 }
 

@@ -169,7 +169,7 @@ void InputController::loop()
         i = 0;
 
         xSemaphoreGive(model_changed);
-        taskYIELD();
+        vTaskDelay(100);
         xSemaphoreTake(model_changed, portMAX_DELAY);
         }
 

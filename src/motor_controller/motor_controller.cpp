@@ -24,10 +24,8 @@ void MotorController::loop()
         if (xSemaphoreTake(model_changed, portMAX_DELAY)) {
             for(uint8_t id = 0; id <= MOTORS_COUNT; id++)
             {
-                Serial.print("Chan");
                 if(!Model::need_update[id]) // Break if model is not changed
                     continue;
-                Serial.println("ged");
 
                 if(id != 0) {
                     
@@ -41,14 +39,11 @@ void MotorController::loop()
                 }
                 else {
                     while (!Model::commands.empty()) {
-						Serial.println("GET!");
                         last_command = Model::commands.front();
                         Model::commands.pop();
 
                         if (Model::motors[last_command.id].can_id == -1)
                             continue;
-						
-						Serial.println("READY!");
 
                         t_id = last_command.id;
                         switch (last_command.type)
@@ -111,8 +106,7 @@ void MotorController::loop()
                                 Serial.print(" min : ");
                                 Serial.print(Model::motors[t_id].min_pos);
                                 Serial.print(" max : ");
-                                Serial.print(Model::motors[t_id].max_pos);
-                                Serial.println();
+                                Serial.println(Model::motors[t_id].max_pos);
                                 Serial.println();
                                 break;
 
@@ -174,7 +168,7 @@ void MotorController::loop()
             }
 
             xSemaphoreGive(model_changed);
-            taskYIELD();
+            vTaskDelay(1);
         }
 
         vTaskDelay(1);
