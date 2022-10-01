@@ -88,6 +88,10 @@ void JoystickController::loop()
 				Model::motors[2].set_position_by_procent(p_pos2);
 				Model::motors[3].set_position_by_procent(p_pos3);
 
+                Model::motors[4].set_position_by_procent(n_pos1);
+                Model::motors[5].set_position_by_procent(n_pos2);
+                Model::motors[6].set_position_by_procent(n_pos3);
+
 				/*
                 Model::push_command(Command{ CONTROL, 1, p_pos1 });
                 Model::push_command(Command{ CONTROL, 2, p_pos2 });
@@ -109,11 +113,6 @@ void JoystickController::loop()
                 xSemaphoreGive(model_changed);
                 vTaskDelay(100);
                 xSemaphoreTake(model_changed, portMAX_DELAY);
-
-                Serial.println(Model::motors[1].get_stats());
-                Serial.println(Model::motors[2].get_stats());
-                Serial.println(Model::motors[3].get_stats());
-                vTaskDelay(500);
             }
             else {
                 PS4.setRumble(0, 0);

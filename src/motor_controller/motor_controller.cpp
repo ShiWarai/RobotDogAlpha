@@ -28,12 +28,6 @@ void MotorController::loop()
                     continue;
 
                 if(id != 0) {
-                    
-                    Serial.print("Move to ");
-                    Serial.print(Model::motors[id].t_pos);
-                    Serial.print(" with stiffness ");
-                    Serial.println(Model::motors[id].kp);
-
                     control_motor(&can_buses[Model::motors[id].can_id], id, &Model::motors[id]);
                     continue;
                 }
@@ -168,7 +162,7 @@ void MotorController::loop()
             }
 
             xSemaphoreGive(model_changed);
-            vTaskDelay(1);
+            taskYIELD();
         }
 
         vTaskDelay(1);

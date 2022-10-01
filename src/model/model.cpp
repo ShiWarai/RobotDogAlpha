@@ -6,9 +6,9 @@ bool Model::init() {
     Model::motors[1] = Motor(0);
     Model::motors[2] = Motor(0);
     Model::motors[3] = Motor(0);
-    Model::motors[4] = Motor();
-    Model::motors[5] = Motor();
-    Model::motors[6] = Motor();
+    Model::motors[4] = Motor(0);
+    Model::motors[5] = Motor(0);
+    Model::motors[6] = Motor(0);
     Model::motors[7] = Motor();
     Model::motors[8] = Motor();
     Model::motors[9] = Motor();
