@@ -27,7 +27,7 @@ public:
 	float min_pos = 0;
 	float max_pos = 0;
 
-	float set_position_by_procent(float proc);
+	void set_position_by_procent(float proc);
 
 	Motor(short _id, short _can_id) : id(_id), can_id(_can_id) {}
 	Motor(short _can_id) : can_id(_can_id) { id = ++motor_counter; }
