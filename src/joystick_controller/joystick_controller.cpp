@@ -84,6 +84,8 @@ void JoystickController::loop()
                 n_pos2 = float(128 + -pos2) / 256;
                 n_pos3 = float(128 + -pos3) / 256;
 
+                Serial.println("Values are ready");
+
 				Model::motors[1].set_position_by_procent(p_pos1);
 				Model::motors[2].set_position_by_procent(p_pos2);
 				Model::motors[3].set_position_by_procent(p_pos3);

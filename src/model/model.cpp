@@ -1,5 +1,4 @@
 #include "model.hpp"
-#include <Arduino.h>
 
 bool Model::init() {
     Serial.println("Start init...");
