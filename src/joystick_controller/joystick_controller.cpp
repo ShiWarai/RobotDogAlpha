@@ -90,6 +90,8 @@ void JoystickController::loop()
 				Model::motors[2].set_position_by_procent(p_pos2);
 				Model::motors[3].set_position_by_procent(p_pos3);
 
+                Serial.println("Next are ready!");
+
 				/*
                 Model::push_command(Command{ CONTROL, 1, p_pos1 });
                 Model::push_command(Command{ CONTROL, 2, p_pos2 });
