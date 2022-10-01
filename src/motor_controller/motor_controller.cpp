@@ -213,10 +213,18 @@ void MotorController::_check_motor(mcp2515_can *can, unsigned long id,
 
 void MotorController::control_motor(mcp2515_can *can, unsigned long id, Motor *motor)
 {
-  can_pack(can, id, motor->t_pos, motor->kp); // Undone
-  vTaskDelay(DELAY);
-  can_unpack(can, id, &motor->c_pos, &motor->c_vel, &motor->c_trq);
-  vTaskDelay(DELAY);
+	Serial.println(motor->t_pos);
+	Serial.println(motor->kp);
+	Serial.println(motor->t_vel);
+	Serial.println(motor->kd);
+	Serial.println(motor->c_trq);
+	vTaskDelay(200);
+	/*
+  	can_pack(can, id, motor->t_pos, motor->kp, motor->t_vel, motor->kd, motor->t_trq); // Undone
+	vTaskDelay(DELAY);
+	can_unpack(can, id, &motor->c_pos, &motor->c_vel, &motor->c_trq);
+	vTaskDelay(DELAY);
+	*/
 }
 
 void MotorController::_control_motor(mcp2515_can *can, unsigned long id,

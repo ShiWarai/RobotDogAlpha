@@ -74,7 +74,7 @@ void JoystickController::loop()
             } 
 
             if (sharePosesButton.turn(PS4.Share())) {
-                PS4.setRumble(10, 0);
+                PS4.setRumble(20, 0);
 
                 p_pos1 = float(128 + pos1) / 256;
                 p_pos2 = float(128 + pos2) / 256;
