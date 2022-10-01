@@ -9,12 +9,12 @@ bool Model::init() {
     Model::motors[4] = Motor(0);
     Model::motors[5] = Motor(0);
     Model::motors[6] = Motor(0);
-    Model::motors[7] = Motor();
-    Model::motors[8] = Motor();
-    Model::motors[9] = Motor();
-    Model::motors[10] = Motor();
-    Model::motors[11] = Motor();
-    Model::motors[12] = Motor();
+    Model::motors[7] = Motor(0);
+    Model::motors[8] = Motor(0);
+    Model::motors[9] = Motor(0);
+    Model::motors[10] = Motor(0);
+    Model::motors[11] = Motor(0);
+    Model::motors[12] = Motor(0);
 
     // Front left leg
     Model::motors[1].min_pos = -0.73 - 0.5;

@@ -93,6 +93,14 @@ void JoystickController::loop()
                 Model::motors[5].set_position_by_procent(n_pos2);
                 Model::motors[6].set_position_by_procent(n_pos3);
 
+                Model::motors[7].set_position_by_procent(n_pos1);
+				Model::motors[8].set_position_by_procent(p_pos2);
+				Model::motors[9].set_position_by_procent(n_pos3);
+
+                Model::motors[10].set_position_by_procent(n_pos1);
+                Model::motors[11].set_position_by_procent(n_pos2);
+                Model::motors[12].set_position_by_procent(n_pos3);
+
 				/*
                 Model::push_command(Command{ CONTROL, 1, p_pos1 });
                 Model::push_command(Command{ CONTROL, 2, p_pos2 });
