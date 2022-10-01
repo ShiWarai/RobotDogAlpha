@@ -25,7 +25,7 @@ void MotorController::loop()
             for(uint8_t id = 0; id <= MOTORS_COUNT; id++)
             {
                 if(!Model::need_update[id]) // Break if model is not changed
-                    break;
+                    continue;
 
                 if(id != 0) {
                     
@@ -35,18 +35,15 @@ void MotorController::loop()
                     Serial.println(Model::motors[id].kp);
 
                     control_motor(&can_buses[Model::motors[id].can_id], id, &Model::motors[id]);
-                    break;
+                    continue;
                 }
                 else {
                     while (!Model::commands.empty()) {
                         last_command = Model::commands.back();
                         Model::commands.pop();
 
-                        if (Model::motors[last_command.id].can_id == -1)
-                        {
-                            vTaskDelay(1);
+                        if (Model::motors[last_command.id].id == 0)
                             continue;
-                        }
 
                         t_id = last_command.id;
                         switch (last_command.type)
