@@ -47,6 +47,8 @@ void MotorController::loop()
 
                         if (Model::motors[last_command.id].can_id == -1)
                             continue;
+						
+						Serial.println("READY!");
 
                         t_id = last_command.id;
                         switch (last_command.type)
@@ -75,6 +77,7 @@ void MotorController::loop()
                                 Serial.println("Motor start");
                                 _start_motor(&can_buses[Model::motors[t_id].can_id], t_id,
                                                 &Model::motors[t_id].c_pos, &Model::motors[t_id].c_vel, &Model::motors[t_id].c_trq);
+								Model::motors[t_id].turn_on = true;
                                 break;
 
                             case CommandType::MOTOR_OFF:
@@ -83,6 +86,7 @@ void MotorController::loop()
                                                 &Model::motors[t_id].c_pos, &Model::motors[t_id].c_vel, &Model::motors[t_id].c_trq);
                                 _stop_motor(&can_buses[Model::motors[t_id].can_id], t_id,
                                             &Model::motors[t_id].c_pos, &Model::motors[t_id].c_vel, &Model::motors[t_id].c_trq);
+								Model::motors[t_id].turn_on = false;
                                 break;
 
                             case CommandType::SET_ORIGIN:

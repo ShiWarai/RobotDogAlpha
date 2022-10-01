@@ -73,10 +73,7 @@ void InputController::loop()
               break;
           }
         
-        Serial.println("Send check!");
         Model::push_command(Command{CHECK, id, 0});
-        Serial.println("Check...");
-        Serial.println(Model::commands.front().id);
         break;
       }
 
