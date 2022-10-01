@@ -179,44 +179,44 @@ void MotorController::_start_motor(mcp2515_can *can, unsigned long id,          
                                    float *c_pos, float *c_vel, float *c_trq) // Motor parameters
 {
   can->sendMsgBuf(id, 0, 8, START_MOTOR);
-  vTaskDelay(_delay);
+  vTaskDelay(DELAY);
   can_unpack(can, id, c_pos, c_vel, c_trq);
-  vTaskDelay(_delay);
+  vTaskDelay(DELAY);
 }
 
 void MotorController::_stop_motor(mcp2515_can *can, unsigned long id,                            // CAN bus and CAN ID
                                   float *c_pos, float *c_vel, float *c_trq) // Motor parameters
 {
   can->sendMsgBuf(id, 0, 8, STOP_MOTOR);
-  vTaskDelay(_delay);
+  vTaskDelay(DELAY);
   can_unpack(can, id, c_pos, c_vel, c_trq);
-  vTaskDelay(_delay);
+  vTaskDelay(DELAY);
 }
 
 void MotorController::_zero_motor(mcp2515_can *can, unsigned long id,                            // CAN bus and CAN ID
                                   float *c_pos, float *c_vel, float *c_trq) // Motor parameters
 {
   can->sendMsgBuf(id, 0, 8, SET_ZERO);
-  vTaskDelay(_delay);
+  vTaskDelay(SET_ORIGIN_WAITING);
   can_unpack(can, id, c_pos, c_vel, c_trq);
-  vTaskDelay(_delay);
+  vTaskDelay(DELAY);
 }
 
 void MotorController::_check_motor(mcp2515_can *can, unsigned long id,
                                    float *c_pos, float *c_vel, float *c_trq)
 {
   can_pack(can, id, 0, 0);
-  vTaskDelay(_delay);
+  vTaskDelay(DELAY);
   can_unpack(can, id, c_pos, c_vel, c_trq);
-  vTaskDelay(_delay);
+  vTaskDelay(DELAY);
 }
 
 void MotorController::control_motor(mcp2515_can *can, unsigned long id, Motor *motor)
 {
   can_pack(can, id, motor->t_pos, motor->kp); // Undone
-  vTaskDelay(_delay);
+  vTaskDelay(DELAY);
   can_unpack(can, id, &motor->c_pos, &motor->c_vel, &motor->c_trq);
-  vTaskDelay(_delay);
+  vTaskDelay(DELAY);
 }
 
 void MotorController::_control_motor(mcp2515_can *can, unsigned long id,
@@ -224,9 +224,9 @@ void MotorController::_control_motor(mcp2515_can *can, unsigned long id,
                                      float *c_pos, float *c_vel, float *c_trq)
 {
   can_pack(can, id, t_pos, t_kp); // Undone
-  vTaskDelay(_delay);
+  vTaskDelay(DELAY);
   can_unpack(can, id, c_pos, c_vel, c_trq);
-  vTaskDelay(_delay);
+  vTaskDelay(DELAY);
 }
 
 unsigned int MotorController::float_to_uint(float x, float x_min, float x_max, float bits)
