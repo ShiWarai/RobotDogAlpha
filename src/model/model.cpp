@@ -1,7 +1,7 @@
 #include "model.hpp"
 
 bool Model::init() {
-    Serial.println("Start init...");
+    //Serial.println("Start init...");
 
     Model::motors[1] = Motor(0);
     Model::motors[2] = Motor(0);
