@@ -87,8 +87,11 @@ void JoystickController::loop()
                 Serial.println("Values are ready");
 
 				Model::motors[1].set_position_by_procent(p_pos1);
+                Model::need_update[1] = true;
 				Model::motors[2].set_position_by_procent(p_pos2);
+                Model::need_update[2] = true;
 				Model::motors[3].set_position_by_procent(p_pos3);
+                Model::need_update[3] = true;
 
                 Serial.println("Next are ready!");
 
