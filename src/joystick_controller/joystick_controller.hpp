@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include <cmath>
 #include <Arduino.h>
 #include "../model/command.hpp"
 #include "../model/model.hpp"

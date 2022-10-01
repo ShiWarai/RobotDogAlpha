@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cmath>
 #include <Arduino.h>
 
 static short motor_counter = 0;
@@ -28,7 +27,6 @@ public:
 	float min_pos = 0;
 	float max_pos = 0;
 
-	void set_position_by_procent(float proc);
 	String get_stats();
 
 	Motor(short _id, short _can_id) : id(_id), can_id(_can_id) {}

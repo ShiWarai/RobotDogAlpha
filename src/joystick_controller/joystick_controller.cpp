@@ -1,5 +1,9 @@
 #include "joystick_controller.hpp"
 
+void set_motor_pos_by_proc(short motor_id, float proc) {
+    Model::motors[motor_id].t_pos = Model::motors[motor_id].min_pos + proc * abs(Model::motors[motor_id].max_pos - Model::motors[motor_id].min_pos);
+    Model::need_update[motor_id] = true;
+}
 
 void JoystickController::loop()
 {
@@ -16,7 +20,7 @@ void JoystickController::loop()
     ClickableButton moveToOriginButton;
 
     PS4.begin(MAC_PS4_JOYSTICK);
-    PS4.setLed(255, 0, 0);
+    PS4.setLed(255, 255, 0);
 
     Serial.println("🔁 Joystick begin");
     while (1) {
@@ -71,6 +75,7 @@ void JoystickController::loop()
                 xSemaphoreGive(model_changed);
                 vTaskDelay(100);
                 xSemaphoreTake(model_changed, portMAX_DELAY);
+                PS4.setLed(255, 0, 0);
             } 
 
             if (sharePosesButton.turn(PS4.Share())) {
@@ -84,13 +89,21 @@ void JoystickController::loop()
                 n_pos2 = float(128 + -pos2) / 256;
                 n_pos3 = float(128 + -pos3) / 256;
 
-				Model::motors[1].set_position_by_procent(p_pos1);
-				Model::motors[2].set_position_by_procent(p_pos2);
-				Model::motors[3].set_position_by_procent(p_pos3);
+				set_motor_pos_by_proc(1, p_pos1);
+				set_motor_pos_by_proc(2, p_pos2);
+				set_motor_pos_by_proc(3, p_pos3);
 
-                Model::motors[4].set_position_by_procent(n_pos1);
-                Model::motors[5].set_position_by_procent(n_pos2);
-                Model::motors[6].set_position_by_procent(n_pos3);
+                set_motor_pos_by_proc(4, n_pos1);
+                set_motor_pos_by_proc(5, n_pos2);
+                set_motor_pos_by_proc(6, n_pos3);
+
+                set_motor_pos_by_proc(7, n_pos1);
+                set_motor_pos_by_proc(8, p_pos2);
+                set_motor_pos_by_proc(9, n_pos3);
+
+                set_motor_pos_by_proc(10, n_pos1);
+                set_motor_pos_by_proc(11, n_pos2);
+                set_motor_pos_by_proc(12, n_pos3);
 
 				/*
                 Model::push_command(Command{ CONTROL, 1, p_pos1 });
@@ -111,7 +124,7 @@ void JoystickController::loop()
 				*/
 
                 xSemaphoreGive(model_changed);
-                vTaskDelay(100);
+                taskYIELD();
                 xSemaphoreTake(model_changed, portMAX_DELAY);
             }
             else {

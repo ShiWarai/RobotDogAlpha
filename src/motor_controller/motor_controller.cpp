@@ -75,6 +75,8 @@ void MotorController::loop()
                                                 &Model::motors[t_id].c_pos, &Model::motors[t_id].c_vel, &Model::motors[t_id].c_trq);
                                 _stop_motor(&can_buses[Model::motors[t_id].can_id], t_id,
                                             &Model::motors[t_id].c_pos, &Model::motors[t_id].c_vel, &Model::motors[t_id].c_trq);
+								Model::motors[t_id].t_pos = 0;
+								Model::motors[t_id].kp = 0;
 								Model::motors[t_id].turn_on = false;
                                 break;
 
@@ -145,15 +147,6 @@ void MotorController::loop()
                             default:
                                 break;
                         }
-
-                        /*
-                        Serial.print(t_id);
-                        Serial.print(": ");
-                        Serial.println(pos);
-                        Serial.println(vel);
-                        Serial.println(trq);
-                        Serial.println();
-                        */
                     }
                 }
 
