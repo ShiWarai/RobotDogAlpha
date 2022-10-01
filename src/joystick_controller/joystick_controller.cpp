@@ -89,13 +89,13 @@ void JoystickController::loop()
                 n_pos2 = float(128 + -pos2) / 256;
                 n_pos3 = float(128 + -pos3) / 256;
 
-				set_motor_pos_by_proc(1, p_pos1);
-				set_motor_pos_by_proc(2, p_pos2);
-				set_motor_pos_by_proc(3, p_pos3);
+                Model::motors[1].set_position_by_procent(p_pos1);
+                Model::motors[2].set_position_by_procent(p_pos1);
+                Model::motors[3].set_position_by_procent(p_pos1);
 
-                set_motor_pos_by_proc(4, n_pos1);
-                set_motor_pos_by_proc(5, n_pos2);
-                set_motor_pos_by_proc(6, n_pos3);
+                Model::motors[4].set_position_by_procent(n_pos1);
+                Model::motors[5].set_position_by_procent(n_pos1);
+                Model::motors[6].set_position_by_procent(n_pos1);
 
 				/*
                 Model::push_command(Command{ CONTROL, 1, p_pos1 });
@@ -116,7 +116,7 @@ void JoystickController::loop()
 				*/
 
                 xSemaphoreGive(model_changed);
-                vTaskDelay(100);
+                taskYIELD();
                 xSemaphoreTake(model_changed, portMAX_DELAY);
             }
             else {
