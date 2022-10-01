@@ -1,6 +1,9 @@
 #include "model.hpp"
+#include <Arduino.h>
 
 bool Model::init() {
+    Serial.println("Start init...");
+
     Model::motors[1] = Motor(0);
     Model::motors[2] = Motor(0);
     Model::motors[3] = Motor(0);
@@ -13,6 +16,8 @@ bool Model::init() {
     Model::motors[10] = Motor();
     Model::motors[11] = Motor();
     Model::motors[12] = Motor();
+
+    Serial.println("Legs...");
 
     // Front left leg
     Model::motors[1].min_pos = -0.73 - 0.5;
@@ -57,6 +62,9 @@ bool Model::init() {
     Model::motors[12].min_pos = -1.5;
     Model::motors[12].max_pos = 0.2;
     Model::motors[12].kp = 2;
+
+    Serial.println("End of init");
+    return true;
 }
 
 void Model::push_command(Command command) {

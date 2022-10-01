@@ -3,6 +3,8 @@
 
 void JoystickController::loop()
 {
+    extern SemaphoreHandle_t model_changed;
+
     float pos1, pos2, pos3;
     float p_pos1, p_pos2, p_pos3;
     float n_pos1, n_pos2, n_pos3;
@@ -12,7 +14,6 @@ void JoystickController::loop()
     ButtonWithState sharePosesButton;
     ClickableButton setOriginButton;
     ClickableButton moveToOriginButton;
-    extern SemaphoreHandle_t model_changed;
 
     PS4.begin(MAC_PS4_JOYSTICK);
     PS4.setLed(255, 0, 0);
