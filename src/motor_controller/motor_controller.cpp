@@ -42,7 +42,7 @@ void MotorController::loop()
                         last_command = Model::commands.back();
                         Model::commands.pop();
 
-                        if (Model::motors[last_command.id].id == 0)
+                        if (Model::motors[last_command.id].can_id == -1)
                             continue;
 
                         t_id = last_command.id;
