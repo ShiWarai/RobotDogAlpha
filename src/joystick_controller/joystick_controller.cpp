@@ -1,7 +1,5 @@
 #include "joystick_controller.hpp"
 
-JoystickController::JoystickController(std::vector<Command> *commands) : _commands(commands) {}
-
 
 void JoystickController::loop()
 {
@@ -14,7 +12,7 @@ void JoystickController::loop()
     ButtonWithState sharePosesButton;
     ClickableButton setOriginButton;
     ClickableButton moveToOriginButton;
-    extern SemaphoreHandle_t commands_ready;
+    extern SemaphoreHandle_t model_changed;
 
     PS4.begin(MAC_PS4_JOYSTICK);
     PS4.setLed(255, 0, 0);
@@ -31,12 +29,12 @@ void JoystickController::loop()
                 if (motorSwitch.state() != motorOnLast)
                 {
                     PS4.setLed(0, 128, 0);
-                    for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
-                        _commands->push_back(Command{ MOTOR_ON, i, 0 });
+                    for (short i = 1; i <= MOTORS_COUNT; i++)
+                        Model::push_command(Command{ MOTOR_ON, i, 0 });
 
-                    xSemaphoreGive(commands_ready);
+                    xSemaphoreGive(model_changed);
                     vTaskDelay(100);
-                    xSemaphoreTake(commands_ready, portMAX_DELAY);
+                    xSemaphoreTake(model_changed, portMAX_DELAY);
 
                     motorOnLast = true;
                 }
@@ -45,33 +43,33 @@ void JoystickController::loop()
                 if (motorSwitch.state() != motorOnLast)
                 {
                     PS4.setLed(255, 0, 0);
-                    for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
-                        _commands->push_back(Command{ MOTOR_OFF, i, 0 });
+                    for (short i = 1; i <= MOTORS_COUNT; i++)
+                        Model::push_command(Command{ MOTOR_OFF, i, 0 });
 
-                    xSemaphoreGive(commands_ready);
+                    xSemaphoreGive(model_changed);
                     vTaskDelay(100);
-                    xSemaphoreTake(commands_ready, portMAX_DELAY);
+                    xSemaphoreTake(model_changed, portMAX_DELAY);
 
                     motorOnLast = false;
                 }
             }
 
             if (moveToOriginButton.turn(PS4.Circle())) {
-                for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
-                    _commands->push_back(Command{ MOTOR_NONE, i, 0 });
+                for (short i = 1; i <= MOTORS_COUNT; i++)
+                    Model::push_command(Command{ MOTOR_NONE, i, 0 });
 
-                xSemaphoreGive(commands_ready);
+                xSemaphoreGive(model_changed);
                 vTaskDelay(100);
-                xSemaphoreTake(commands_ready, portMAX_DELAY);
+                xSemaphoreTake(model_changed, portMAX_DELAY);
             }
 
             if (setOriginButton.turn(PS4.Options())) {
-                for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
-                    _commands->push_back(Command{ SET_ORIGIN, i, 0 });
+                for (short i = 1; i <= MOTORS_COUNT; i++)
+                    Model::push_command(Command{ SET_ORIGIN, i, 0 });
 
-                xSemaphoreGive(commands_ready);
+                xSemaphoreGive(model_changed);
                 vTaskDelay(100);
-                xSemaphoreTake(commands_ready, portMAX_DELAY);
+                xSemaphoreTake(model_changed, portMAX_DELAY);
             } 
 
             if (sharePosesButton.turn(PS4.Share())) {
@@ -85,25 +83,34 @@ void JoystickController::loop()
                 n_pos2 = float(128 + -pos2) / 256;
                 n_pos3 = float(128 + -pos3) / 256;
 
-                _commands->push_back(Command{ CONTROL, 1, p_pos1 });
-                _commands->push_back(Command{ CONTROL, 2, p_pos2 });
-                _commands->push_back(Command{ CONTROL, 3, p_pos3 });
+				Model::motors[1].set_position_by_procent(p_pos1);
+				Model::need_update[1] = true;
+				Model::motors[2].set_position_by_procent(p_pos2);
+				Model::need_update[2] = true;
+				Model::motors[3].set_position_by_procent(p_pos3);
+				Model::need_update[3] = true;
 
-                _commands->push_back(Command{ CONTROL, 4, n_pos1 });
-                _commands->push_back(Command{ CONTROL, 5, n_pos2 });
-                _commands->push_back(Command{ CONTROL, 6, n_pos3 });
+				/*
+                Model::push_command(Command{ CONTROL, 1, p_pos1 });
+                Model::push_command(Command{ CONTROL, 2, p_pos2 });
+                Model::push_command(Command{ CONTROL, 3, p_pos3 });
 
-                _commands->push_back(Command{ CONTROL, 7, n_pos1 });
-                _commands->push_back(Command{ CONTROL, 8, p_pos2 });
-                _commands->push_back(Command{ CONTROL, 9, n_pos3 });
+                Model::push_command(Command{ CONTROL, 4, n_pos1 });
+                Model::push_command(Command{ CONTROL, 5, n_pos2 });
+                Model::push_command(Command{ CONTROL, 6, n_pos3 });
 
-                _commands->push_back(Command{ CONTROL, 10, n_pos1 });
-                _commands->push_back(Command{ CONTROL, 11, n_pos2 });
-                _commands->push_back(Command{ CONTROL, 12, n_pos3 });
+                Model::push_command(Command{ CONTROL, 7, n_pos1 });
+                Model::push_command(Command{ CONTROL, 8, p_pos2 });
+                Model::push_command(Command{ CONTROL, 9, n_pos3 });
 
-                xSemaphoreGive(commands_ready);
+                Model::push_command(Command{ CONTROL, 10, n_pos1 });
+                Model::push_command(Command{ CONTROL, 11, n_pos2 });
+                Model::push_command(Command{ CONTROL, 12, n_pos3 });
+				*/
+
+                xSemaphoreGive(model_changed);
                 vTaskDelay(100);
-                xSemaphoreTake(commands_ready, portMAX_DELAY);
+                xSemaphoreTake(model_changed, portMAX_DELAY);
             }
             else {
                 PS4.setRumble(0, 0);

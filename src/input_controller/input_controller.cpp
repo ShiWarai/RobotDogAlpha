@@ -1,6 +1,5 @@
 #include "input_controller.hpp"
 
-InputController::InputController(std::vector<Command> *commands) : _commands(commands) {}
 
 void InputController::loop()
 {
@@ -8,9 +7,9 @@ void InputController::loop()
   char c;                 // Read a char from the Serial
   char buf[msg_len]{0};   // Collect chars into message
   uint8_t i = 0;          // Current message chars position
-  unsigned long id;
+  short id;
   unsigned short pos;
-  extern SemaphoreHandle_t commands_ready;
+  extern SemaphoreHandle_t model_changed;
 
   Serial.println("🔁 Serial input begin");
   while (1)
@@ -38,11 +37,10 @@ void InputController::loop()
                   Serial.println("Wrong id!");
                   break;
               }
-
-              _commands->push_back(Command{ MOTOR_ON, id, 0 });
+              Model::push_command(Command{ MOTOR_ON, id, 0 });
           } else {
               for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
-                  _commands->push_back(Command{ MOTOR_ON, i, 0 });
+                  Model::push_command(Command{ MOTOR_ON, id, 0 });
           }
           break;
 
@@ -57,11 +55,11 @@ void InputController::loop()
                   break;
               }
 
-              _commands->push_back(Command{ MOTOR_OFF, id, 0 });
+              Model::push_command(Command{ MOTOR_OFF, id, 0 });
           }
           else {
-              for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
-                  _commands->push_back(Command{ MOTOR_OFF, i, 0 });
+              for (short i = 1; i <= MOTORS_COUNT; i++)
+                  Model::push_command(Command{ MOTOR_OFF, i, 0 });
           }
           break;
 
@@ -75,7 +73,7 @@ void InputController::loop()
               break;
           }
 
-        _commands->push_back(Command{CHECK, id, 0});
+        Model::push_command(Command{CHECK, id, 0});
         break;
       }
 
@@ -90,11 +88,11 @@ void InputController::loop()
                   break;
               }
 
-              _commands->push_back(Command{ SET_ORIGIN, id, 0 });
+              Model::push_command(Command{ SET_ORIGIN, id, 0 });
           }
           else {
-              for (unsigned long i = 1; i <= MOTORS_COUNT; i++)
-                  _commands->push_back(Command{ SET_ORIGIN, i, 0 });
+              for (short i = 1; i <= MOTORS_COUNT; i++)
+                  Model::push_command(Command{ SET_ORIGIN, i, 0 });
           }
           break;
 
@@ -107,7 +105,7 @@ void InputController::loop()
               break;
           }
 
-          _commands->push_back(Command{ SET_MIN, id, 0 });
+          Model::push_command(Command{ SET_MIN, id, 0 });
           break;
 
       case 'h':
@@ -119,7 +117,7 @@ void InputController::loop()
               break;
           }
 
-          _commands->push_back(Command{ SET_MAX, id, 0 });
+          Model::push_command(Command{ SET_MAX, id, 0 });
           break;
 
       case 'w':
@@ -131,7 +129,7 @@ void InputController::loop()
               break;
           }
 
-          _commands->push_back(Command{ MOVE_MAX, id, 0 }); // Replace to _commands->push_back(Command{ CONTROL, id, 1 });
+          Model::push_command(Command{ MOVE_MAX, id, 0 }); // Replace to Model::push_command(Command{ CONTROL, id, 1 });
           break;
 
       case 's':
@@ -143,7 +141,7 @@ void InputController::loop()
               break;
           }
 
-          _commands->push_back(Command{ MOVE_MIN, id, 0 }); // Replace to _commands->push_back(Command{ CONTROL, id, 0 });
+          Model::push_command(Command{ MOVE_MIN, id, 0 }); // Replace to Model::push_command(Command{ CONTROL, id, 0 });
           break;
 
       case 'm':
@@ -161,7 +159,7 @@ void InputController::loop()
               break;
           }
 
-          _commands->push_back(Command{ CONTROL, id, float(pos) / 100 });
+          Model::push_command(Command{ CONTROL, id, float(pos) / 100 });
           break;
       }
 
@@ -169,9 +167,9 @@ void InputController::loop()
       memset(buf, 0, sizeof(buf));
       i = 0;
 
-      xSemaphoreGive(commands_ready);
-      vTaskDelay(100);
-      xSemaphoreTake(commands_ready, portMAX_DELAY);
+      xSemaphoreGive(model_changed);
+      taskYIELD();
+      xSemaphoreTake(model_changed, portMAX_DELAY);
     }
 
     vTaskDelay(1);
