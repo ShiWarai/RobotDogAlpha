@@ -28,7 +28,8 @@ void MotorController::loop()
                     continue;
 
                 if(id != 0) {
-                    control_motor(&can_buses[Model::motors[id].can_id], id, &Model::motors[id]);
+					if (Model::motors[id].can_id != -1)
+                            control_motor(&can_buses[Model::motors[id].can_id], id, &Model::motors[id]);
                     continue;
                 }
                 else {
