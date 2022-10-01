@@ -23,7 +23,7 @@ private:
   mcp2515_can can_buses[CAN_COUNT] = { mcp2515_can(33) };
 
   const int DELAY = 8;
-  const int SET_ORIGIN_WAITING = 500;
+  const int SET_ORIGIN_WAITING = 1500;
 
   void _start_motor(mcp2515_can *can, unsigned long id,
                     float *m_pos, float *m_vel, float *m_trq);
