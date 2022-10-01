@@ -97,14 +97,6 @@ void JoystickController::loop()
                 set_motor_pos_by_proc(5, n_pos2);
                 set_motor_pos_by_proc(6, n_pos3);
 
-                set_motor_pos_by_proc(7, n_pos1);
-                set_motor_pos_by_proc(8, p_pos2);
-                set_motor_pos_by_proc(9, n_pos3);
-
-                set_motor_pos_by_proc(10, n_pos1);
-                set_motor_pos_by_proc(11, n_pos2);
-                set_motor_pos_by_proc(12, n_pos3);
-
 				/*
                 Model::push_command(Command{ CONTROL, 1, p_pos1 });
                 Model::push_command(Command{ CONTROL, 2, p_pos2 });
@@ -124,7 +116,7 @@ void JoystickController::loop()
 				*/
 
                 xSemaphoreGive(model_changed);
-                taskYIELD();
+                vTaskDelay(100);
                 xSemaphoreTake(model_changed, portMAX_DELAY);
             }
             else {
