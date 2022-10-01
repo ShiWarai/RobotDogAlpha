@@ -16,7 +16,7 @@ void JoystickController::loop()
     ClickableButton moveToOriginButton;
 
     PS4.begin(MAC_PS4_JOYSTICK);
-    PS4.setLed(255, 0, 0);
+    PS4.setLed(255, 255, 0);
 
     Serial.println("🔁 Joystick begin");
     while (1) {
@@ -71,6 +71,7 @@ void JoystickController::loop()
                 xSemaphoreGive(model_changed);
                 vTaskDelay(100);
                 xSemaphoreTake(model_changed, portMAX_DELAY);
+                PS4.setLed(255, 0, 0);
             } 
 
             if (sharePosesButton.turn(PS4.Share())) {
@@ -111,7 +112,7 @@ void JoystickController::loop()
 				*/
 
                 xSemaphoreGive(model_changed);
-                vTaskDelay(100);
+                taskYIELD();
                 xSemaphoreTake(model_changed, portMAX_DELAY);
             }
             else {
