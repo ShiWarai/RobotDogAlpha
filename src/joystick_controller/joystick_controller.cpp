@@ -3,6 +3,8 @@
 
 void JoystickController::loop()
 {
+    extern SemaphoreHandle_t model_changed;
+
     float pos1, pos2, pos3;
     float p_pos1, p_pos2, p_pos3;
     float n_pos1, n_pos2, n_pos3;
@@ -12,10 +14,9 @@ void JoystickController::loop()
     ButtonWithState sharePosesButton;
     ClickableButton setOriginButton;
     ClickableButton moveToOriginButton;
-    extern SemaphoreHandle_t model_changed;
 
     PS4.begin(MAC_PS4_JOYSTICK);
-    PS4.setLed(255, 0, 0);
+    PS4.setLed(255, 255, 0);
 
     Serial.println("🔁 Joystick begin");
     while (1) {
@@ -70,10 +71,11 @@ void JoystickController::loop()
                 xSemaphoreGive(model_changed);
                 vTaskDelay(100);
                 xSemaphoreTake(model_changed, portMAX_DELAY);
+                PS4.setLed(255, 0, 0);
             } 
 
             if (sharePosesButton.turn(PS4.Share())) {
-                PS4.setRumble(10, 0);
+                PS4.setRumble(20, 0);
 
                 p_pos1 = float(128 + pos1) / 256;
                 p_pos2 = float(128 + pos2) / 256;
@@ -86,6 +88,18 @@ void JoystickController::loop()
 				Model::motors[1].set_position_by_procent(p_pos1);
 				Model::motors[2].set_position_by_procent(p_pos2);
 				Model::motors[3].set_position_by_procent(p_pos3);
+
+                Model::motors[4].set_position_by_procent(n_pos1);
+                Model::motors[5].set_position_by_procent(n_pos2);
+                Model::motors[6].set_position_by_procent(n_pos3);
+
+                Model::motors[7].set_position_by_procent(n_pos1);
+				Model::motors[8].set_position_by_procent(p_pos2);
+				Model::motors[9].set_position_by_procent(n_pos3);
+
+                Model::motors[10].set_position_by_procent(n_pos1);
+                Model::motors[11].set_position_by_procent(n_pos2);
+                Model::motors[12].set_position_by_procent(n_pos3);
 
 				/*
                 Model::push_command(Command{ CONTROL, 1, p_pos1 });
@@ -106,7 +120,7 @@ void JoystickController::loop()
 				*/
 
                 xSemaphoreGive(model_changed);
-                vTaskDelay(100);
+                taskYIELD();
                 xSemaphoreTake(model_changed, portMAX_DELAY);
             }
             else {
