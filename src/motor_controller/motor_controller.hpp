@@ -4,46 +4,47 @@
 #include <Arduino.h>
 #include <mcp2515_can.h>
 
-#include "input_controller/command.hpp"
+#include "../model/command.hpp"
 #include "freertos/semphr.h"
 
 #include "commands.hpp"
 #include "limits.hpp"
-#include "motor.hpp"
+#include "../model/model.hpp"
 
 #define CAN_COUNT 1
 
 class MotorController
 {
 public:
-  MotorController(std::vector<Command>* commands);
+  MotorController() {};
   void loop();
 
 private:
-  mcp2515_can _can_buses[CAN_COUNT] = { mcp2515_can(33) };
-  std::vector<Command> *_commands;
+  mcp2515_can can_buses[CAN_COUNT] = { mcp2515_can(33) };
 
-  const int _delay = 8;
+  const int DELAY = 8;
+  const int SET_ORIGIN_WAITING = 1500;
 
-  void _start_motor(mcp2515_can *can, unsigned long id,                             // CAN bus and CAN ID
-                    unsigned long *m_id, float *m_pos, float *m_vel, float *m_trq); // Motor parameters
+  void _start_motor(mcp2515_can *can, unsigned long id,
+                    float *m_pos, float *m_vel, float *m_trq);
 
-  void _stop_motor(mcp2515_can *can, unsigned long id,                             // CAN bus and CAN ID
-                   unsigned long *m_id, float *m_pos, float *m_vel, float *m_trq); // Motor parameters
+  void _stop_motor(mcp2515_can *can, unsigned long id,
+                   float *m_pos, float *m_vel, float *m_trq);
 
-  void _zero_motor(mcp2515_can *can, unsigned long id,                             // CAN bus and CAN ID
-                   unsigned long *m_id, float *m_pos, float *m_vel, float *m_trq); // Motor parameters
+  void _zero_motor(mcp2515_can *can, unsigned long id,
+                    float *m_pos, float *m_vel, float *m_trq);
 
-  void _check_motor(mcp2515_can *can, unsigned long id,                             // CAN bus and CAN ID
-                    unsigned long *m_id, float *m_pos, float *m_vel, float *m_trq); // Motor parameters
+  void _check_motor(mcp2515_can *can, unsigned long id,
+                    float *m_pos, float *m_vel, float *m_trq);
 
-  void _control_motor(mcp2515_can *can, unsigned long id,                             // CAN bus and CAN ID
-                      float new_position, float new_stiffness, float new_damper,      // New parameters
-                      unsigned long *m_id, float *m_pos, float *m_vel, float *m_trq); // Motor parameters
+  void control_motor(mcp2515_can *can, unsigned long id, Motor *motor);
+  void _control_motor(mcp2515_can *can, unsigned long id,
+                                     float t_pos, float t_kp,
+                                     float *c_pos, float *c_vel, float *c_trq);
 
-  unsigned int _float_to_uint(float x, float x_min, float x_max, float bits);
-  float _uint_to_float(unsigned int x_int, float x_min, float x_max, float bits);
+  unsigned int float_to_uint(float x, float x_min, float x_max, float bits);
+  float uint_to_float(unsigned int x_int, float x_min, float x_max, float bits);
 
-  byte _can_pack(mcp2515_can *can, unsigned long id, float new_position, float new_stiffness, float new_damper); // Control
-  byte _can_unpack(mcp2515_can *can, unsigned long id, unsigned long *m_id, float *m_pos, float *m_vel, float *m_trq);
+  byte can_pack(mcp2515_can *can, unsigned long id, float t_pos, float t_kp, float t_vel = 0, float t_kd = 0, float t_trq = 0);
+  byte can_unpack(mcp2515_can *can, unsigned long id, float *c_pos, float *c_vel, float *c_trq, unsigned long *m_id = nullptr);
 };

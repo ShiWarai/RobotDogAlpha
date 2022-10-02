@@ -3,17 +3,14 @@
 #include <vector>
 #include <Arduino.h>
 
-#include "command.hpp"
-#include "../motor_controller/motor.hpp"
+#include "../model/command.hpp"
+#include "../model/model.hpp"
 #include "freertos/semphr.h"
+#include "freertos/task.h"
 
 class InputController
 {
 public:
-  InputController() = delete;
-  InputController(std::vector<Command> *commands);
-
-  void loop();
-private:
-  std::vector<Command> *_commands;
+    InputController() {};
+    void loop();
 };

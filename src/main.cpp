@@ -1,4 +1,3 @@
-#include <vector>
 #include <Arduino.h>
 #include <mcp2515_can.h>
 #include "freertos/semphr.h"
@@ -7,43 +6,43 @@
 #include "joystick_controller/joystick_controller.hpp"
 #include "motor_controller/motor_controller.hpp"
 
-std::vector<Command> commands;
-SemaphoreHandle_t commands_ready = xSemaphoreCreateBinary();
+SemaphoreHandle_t model_changed = xSemaphoreCreateBinary();
 
-InputController input_controller(&commands);
-JoystickController joystick_controller(&commands);
-MotorController motor_controller(&commands);
+InputController input_controller;
+JoystickController joystick_controller;
+MotorController motor_controller;
 
 
 void task_input_controller(void *p)
 {
-  input_controller.loop();
+	input_controller.loop();
 }
 
 void task_joystick_controller(void* p)
 {
-    
-  joystick_controller.loop(); 
+	joystick_controller.loop(); 
 }
 
 void task_motor_controller(void *p)
 {
-  motor_controller.loop();
+	motor_controller.loop();
 }
 
 void setup()
 {
-  Serial.begin(115200);
+	Serial.begin(115200);
 
-  xTaskCreate(task_input_controller, "Input controller", 1024, NULL, 1, NULL);
-  delay(5);
-  xTaskCreate(task_joystick_controller, "Joystick controller", 10240, NULL, 1, NULL);
-  delay(5);
-  xTaskCreate(task_motor_controller, "Motor controller", 4096, NULL, 1, NULL);
-  delay(5);
+	Model::init();
+
+	//xTaskCreate(task_input_controller, "Input controller", 1024, NULL, 1, NULL);
+	//delay(5);
+	xTaskCreate(task_joystick_controller, "Joystick controller", 10240, NULL, 1, NULL);
+	delay(5);
+	xTaskCreate(task_motor_controller, "Motor controller", 4096, NULL, 1, NULL);
+	delay(5);
 }
 
 void loop()
 {
-  vTaskDelete(NULL);
+	vTaskDelete(NULL);
 }

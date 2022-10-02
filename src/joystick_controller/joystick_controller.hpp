@@ -2,8 +2,8 @@
 
 #include <vector>
 #include <Arduino.h>
-#include "../input_controller/command.hpp"
-#include "../motor_controller/motor.hpp"
+#include "../model/command.hpp"
+#include "../model/model.hpp"
 #include <PS4Controller.h>
 
 #define MAC_PS4_JOYSTICK "c0:e4:34:4f:b0:4d"
@@ -73,10 +73,6 @@ public:
 class JoystickController
 {
 public:
-  JoystickController() = delete;
-  JoystickController(std::vector<Command> *commands);
-
-  void loop();
-private:
-  std::vector<Command> *_commands;
+    JoystickController() {};
+    void loop();
 };
