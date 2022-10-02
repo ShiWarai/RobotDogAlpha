@@ -2,18 +2,15 @@
 
 #include <vector>
 #include <Arduino.h>
-#include "command.hpp"
+
+#include "../model/command.hpp"
+#include "../model/model.hpp"
+#include "freertos/semphr.h"
+#include "freertos/task.h"
 
 class InputController
 {
 public:
-  InputController() = delete;
-  InputController(std::vector<Command> *commands);
-
-  bool set_zero = false; // DEBUG
-  bool go_zero = false;  // DEBUG
-  void loop();
-
-private:
-  std::vector<Command> *_commands;
+    InputController() {};
+    void loop();
 };

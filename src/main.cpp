@@ -1,44 +1,48 @@
-#include <vector>
 #include <Arduino.h>
 #include <mcp2515_can.h>
+#include "freertos/semphr.h"
 
-#include "input_controller/command.hpp"
 #include "input_controller/input_controller.hpp"
-std::vector<Command> commands;
-InputController input_controller(&commands);
+#include "joystick_controller/joystick_controller.hpp"
+#include "motor_controller/motor_controller.hpp"
+
+SemaphoreHandle_t model_changed = xSemaphoreCreateBinary();
+
+InputController input_controller;
+JoystickController joystick_controller;
+MotorController motor_controller;
+
+
 void task_input_controller(void *p)
 {
-  Serial.println("🔁 Serial input begin");
-  input_controller.loop();
+	input_controller.loop();
 }
 
-#include "motor_controller/motor_controller.hpp"
-mcp2515_can can1(5);
-MotorController motor_controller(&can1, &commands);
+void task_joystick_controller(void* p)
+{
+	joystick_controller.loop(); 
+}
+
 void task_motor_controller(void *p)
 {
-  Serial.println("🔁 Motor controller begin");
-  motor_controller.loop();
+	motor_controller.loop();
 }
 
 void setup()
 {
-  delay(500);
-  Serial.begin(115200);
+	Serial.begin(115200);
 
-  while (can1.begin(CAN_1000KBPS, MCP_8MHz) != CAN_OK)
-  {
-    Serial.println("CAN 1 - error on begin!");
-    delay(1000);
-  }
+	Model::init();
 
-  xTaskCreate(task_input_controller, "Input controller", 1024, NULL, 1, NULL);
-  delay(5);
-  xTaskCreate(task_motor_controller, "Motor controller", 1024, NULL, 1, NULL);
-  delay(5);
+	//xTaskCreate(task_input_controller, "Input controller", 1024, NULL, 1, NULL);
+	//delay(5);
+	xTaskCreate(task_joystick_controller, "Joystick controller", 10240, NULL, 1, NULL);
+	delay(5);
+	xTaskCreate(task_motor_controller, "Motor controller", 4096, NULL, 1, NULL);
+	delay(5);
 }
 
 void loop()
 {
-  vTaskDelete(NULL);
+	vTaskDelete(NULL);
 }
