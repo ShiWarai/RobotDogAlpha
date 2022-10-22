@@ -12,7 +12,7 @@
 
 mcp2515_can _can_buses[CAN_COUNT] = { mcp2515_can(5) };
 
-Motor MOTORS[MOTORS_COUNT + 1]{ NULL, Motor(0), Motor(0), Motor(0), Motor(), Motor(), Motor(), Motor(), Motor(), Motor(), Motor(), Motor(), Motor() };
+Motor MOTORS[MOTORS_COUNT + 1]{ NULL, Motor(0), Motor(0), Motor(0)};
 
 void _start_motor(mcp2515_can *can, unsigned long id,                             // CAN bus and CAN ID
 				  unsigned long *m_id, float *m_pos, float *m_vel, float *m_trq); // Motor parameters
@@ -47,50 +47,15 @@ void setup()
 	}
 
   	// Front left leg
-	MOTORS[1].min_pos = -0.73 - 0.5;
-	MOTORS[1].max_pos = 0.0 - 0.3;
+	MOTORS[1].min_pos = 0.2;
+	MOTORS[1].max_pos = 1.5;
 	MOTORS[1].stiffness = 2;
-	MOTORS[2].min_pos = -0.7;
-	MOTORS[2].max_pos = 0.7;
+	MOTORS[2].min_pos = -1.5;
+	MOTORS[2].max_pos = 0.2;
 	MOTORS[2].stiffness = 2;
-	MOTORS[3].min_pos = 0.20;
+	MOTORS[3].min_pos = 0.2;
 	MOTORS[3].max_pos = 1.5;
 	MOTORS[3].stiffness = 2;
-
-	// Front right leg
-	MOTORS[4].min_pos = 0.0 + 0.3;
-	MOTORS[4].max_pos = 0.73 + 0.5;
-	MOTORS[4].stiffness = 6;
-	MOTORS[5].min_pos = -0.7;
-	MOTORS[5].max_pos = 0.7;
-	MOTORS[5].stiffness = 8;
-	MOTORS[6].min_pos = -1.5;
-	MOTORS[6].max_pos = 0.2;
-	MOTORS[6].stiffness = 2;
-
-	// Back left leg
-	MOTORS[7].min_pos = 0.0 + 0.3;
-	MOTORS[7].max_pos = 0.73 + 0.2;
-	MOTORS[7].stiffness = 6;
-	MOTORS[8].min_pos = -0.7;
-	MOTORS[8].max_pos = 0.7;
-	MOTORS[8].stiffness = 12;
-	MOTORS[9].min_pos = -1.5;
-	MOTORS[9].max_pos = 0.2;
-	MOTORS[9].stiffness = 2;
-
-	// Back right leg
-	MOTORS[10].min_pos = 0.0 + 0.3;
-	MOTORS[10].max_pos = 0.73 + 0.2;
-	MOTORS[10].stiffness = 6;
-	MOTORS[11].min_pos = -0.7;
-	MOTORS[11].max_pos = 0.7;
-	MOTORS[11].stiffness = 12;
-	MOTORS[12].min_pos = -1.5;
-	MOTORS[12].max_pos = 0.2;
-	MOTORS[12].stiffness = 2;
-
-	vTaskDelay(3000);
 }
 
 void loop()
@@ -98,89 +63,90 @@ void loop()
 	unsigned long m_id;
 	float pos, vel, trq;
 
-	if (!Serial.available()) {
-		vTaskDelay(1);
-		return;
-	}
-	else {
-		Serial.println("🔁 Serial input begin");
-		while (Serial.available())
-		{
-			if (Serial.read() == 'b')
-			{
-				break;
-			}
-			else {
-				vTaskDelay(1);
-				return;
-			}
-		}
-	}
-
 	for(unsigned long id = 1; id <= MOTORS_COUNT; id++) {
-		vTaskDelay(DELAY);
 		if (MOTORS[id]._can_id == -1)
 			continue;
 
 		Serial.println("Motor zero");
 		_zero_motor(&_can_buses[MOTORS[id]._can_id], id, &m_id, &pos, &vel, &trq);
+		vTaskDelay(3000);
 	}
 
-	vTaskDelay(1000);
+	while (1) {
+		Serial.println("🔁 Cycle is started");
 
-	for(unsigned long id = 1; id <= MOTORS_COUNT; id++) {
-		vTaskDelay(DELAY);
-		if(MOTORS[id]._can_id == -1)
-			continue;
+		for (unsigned long id = 1; id <= MOTORS_COUNT; id++) {
+			vTaskDelay(DELAY);
+			if (MOTORS[id]._can_id == -1)
+				continue;
 
-		Serial.println("Motor start");
-		_start_motor(&_can_buses[MOTORS[id]._can_id], id, &m_id, &pos, &vel, &trq);
+			Serial.println("Motor start");
+			_start_motor(&_can_buses[MOTORS[id]._can_id], id, &m_id, &pos, &vel, &trq);
+		}
+
+		vTaskDelay(3000);
+
+		for (unsigned long id = 1; id <= MOTORS_COUNT; id++) {
+			vTaskDelay(DELAY);
+			if (MOTORS[id]._can_id == -1)
+				continue;
+
+			pos = (float)constrain(0.5, 0.0, 1.0);
+
+			pos = MOTORS[id].min_pos + pos * abs(MOTORS[id].max_pos - MOTORS[id].min_pos);
+
+			Serial.print("Move to ");
+			Serial.print(pos);
+			Serial.print(" with stiffness ");
+			Serial.println(MOTORS[id].stiffness);
+
+			_control_motor(&_can_buses[MOTORS[id]._can_id], id, pos, MOTORS[id].stiffness, 0, &m_id, &pos, &vel, &trq);
+
+			MOTORS[id].pos = pos;
+			MOTORS[id].vel = vel;
+			MOTORS[id].trq = trq;
+
+			Serial.print(id);
+			Serial.print(": ");
+			Serial.println(pos);
+			Serial.println(vel);
+			Serial.println(trq);
+			Serial.println();
+		}
+
+		vTaskDelay(3000);
+
+		for (unsigned long id = 1; id <= MOTORS_COUNT; id++) {
+			vTaskDelay(DELAY);
+			if (MOTORS[id]._can_id == -1)
+				continue;
+
+			pos = 0;
+
+			Serial.print("Move to ");
+			Serial.print(pos);
+			Serial.print(" with stiffness ");
+			Serial.println(MOTORS[id].stiffness);
+
+			_control_motor(&_can_buses[MOTORS[id]._can_id], id, pos, MOTORS[id].stiffness, 0, &m_id, &pos, &vel, &trq);
+		}
+
+		vTaskDelay(3000);
+
+		for (unsigned long id = 1; id <= MOTORS_COUNT; id++) {
+			vTaskDelay(DELAY);
+			if (MOTORS[id]._can_id == -1)
+				continue;
+
+			Serial.println("Motor stop");
+			//_control_motor(&_can_buses[MOTORS[id]._can_id], id, 0, 0, 0, &m_id, &pos, &vel, &trq);
+			//vTaskDelay(DELAY);
+			_stop_motor(&_can_buses[MOTORS[id]._can_id], id, &m_id, &pos, &vel, &trq);
+		}
+
+		Serial.println("🔁 Cycle is stoped");
+		vTaskDelay(3000);
 	}
-
-	vTaskDelay(3000);
-
-	//for(unsigned long id = 1; id <= MOTORS_COUNT; id++) {
-	//	vTaskDelay(DELAY);
-	//	if(MOTORS[id]._can_id == -1)
-	//		continue;
-
-	//	pos = (float) constrain(0.5, 0.0, 1.0);
-
-	//	pos = MOTORS[id].min_pos + pos * abs(MOTORS[id].max_pos - MOTORS[id].min_pos);
-
-	//	Serial.print("Move to ");
-	//	Serial.print(pos);
-	//	Serial.print(" with stiffness ");
-	//	Serial.println(MOTORS[id].stiffness);
-
-	//	_control_motor(&_can_buses[MOTORS[id]._can_id], id, pos, MOTORS[id].stiffness, 0, &m_id, &pos, &vel, &trq);
-
-	//	MOTORS[id].pos = pos;
-	//	MOTORS[id].vel = vel;
-	//	MOTORS[id].trq = trq;
-
-	//	Serial.print(id);
-	//	Serial.print(": ");
-	//	Serial.println(pos);
-	//	Serial.println(vel);
-	//	Serial.println(trq);
-	//	Serial.println();
-	//}
-
-	vTaskDelay(50000);
-
-	for(unsigned long id = 1; id <= MOTORS_COUNT; id++) {
-		vTaskDelay(DELAY);
-		if(MOTORS[id]._can_id == -1)
-			continue;
-
-		Serial.println("Motor stop");
-		//_control_motor(&_can_buses[MOTORS[id]._can_id], id, 0, 0, 0, &m_id, &pos, &vel, &trq);
-		//vTaskDelay(DELAY);
-		_stop_motor(&_can_buses[MOTORS[id]._can_id], id, &m_id, &pos, &vel, &trq);
-	}
-
-	Serial.println("🔁 Cycle is stoped");
 
 	while(1) {
 		vTaskDelay(1);
