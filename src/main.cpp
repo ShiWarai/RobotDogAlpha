@@ -72,18 +72,19 @@ void loop()
 		vTaskDelay(3000);
 	}
 
-	for (unsigned long id = 1; id <= MOTORS_COUNT; id++) {
-		vTaskDelay(DELAY);
-		if (MOTORS[id]._can_id == -1)
-			continue;
-
-		Serial.println("Motor start");
-		_start_motor(&_can_buses[MOTORS[id]._can_id], id, &m_id, &pos, &vel, &trq);
-	}
-
 	while (1) {
 		Serial.println("🔁 Cycle is started");
-		vTaskDelay(1500);
+
+		for (unsigned long id = 1; id <= MOTORS_COUNT; id++) {
+			vTaskDelay(DELAY);
+			if (MOTORS[id]._can_id == -1)
+				continue;
+
+			Serial.println("Motor start");
+			_start_motor(&_can_buses[MOTORS[id]._can_id], id, &m_id, &pos, &vel, &trq);
+		}
+
+		vTaskDelay(3000);
 
 		for (unsigned long id = 1; id <= MOTORS_COUNT; id++) {
 			vTaskDelay(DELAY);
@@ -130,19 +131,21 @@ void loop()
 			_control_motor(&_can_buses[MOTORS[id]._can_id], id, pos, MOTORS[id].stiffness, 0, &m_id, &pos, &vel, &trq);
 		}
 
+		vTaskDelay(3000);
+
+		for (unsigned long id = 1; id <= MOTORS_COUNT; id++) {
+			vTaskDelay(DELAY);
+			if (MOTORS[id]._can_id == -1)
+				continue;
+
+			Serial.println("Motor stop");
+			//_control_motor(&_can_buses[MOTORS[id]._can_id], id, 0, 0, 0, &m_id, &pos, &vel, &trq);
+			//vTaskDelay(DELAY);
+			_stop_motor(&_can_buses[MOTORS[id]._can_id], id, &m_id, &pos, &vel, &trq);
+		}
+
 		Serial.println("🔁 Cycle is stoped");
-		vTaskDelay(1500);
-	}
-
-	for (unsigned long id = 1; id <= MOTORS_COUNT; id++) {
-		vTaskDelay(DELAY);
-		if (MOTORS[id]._can_id == -1)
-			continue;
-
-		Serial.println("Motor stop");
-		//_control_motor(&_can_buses[MOTORS[id]._can_id], id, 0, 0, 0, &m_id, &pos, &vel, &trq);
-		//vTaskDelay(DELAY);
-		_stop_motor(&_can_buses[MOTORS[id]._can_id], id, &m_id, &pos, &vel, &trq);
+		vTaskDelay(3000);
 	}
 
 	while(1) {
