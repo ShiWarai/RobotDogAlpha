@@ -6,9 +6,9 @@ bool Model::init() {
     Model::motors[1] = Motor(0);
     Model::motors[2] = Motor(0);
     Model::motors[3] = Motor(0);
-    Model::motors[4] = Motor(0);
-    Model::motors[5] = Motor(0);
-    Model::motors[6] = Motor(0);
+    Model::motors[4] = Motor();
+    Model::motors[5] = Motor();
+    Model::motors[6] = Motor();
     Model::motors[7] = Motor();
     Model::motors[8] = Motor();
     Model::motors[9] = Motor();
@@ -19,10 +19,10 @@ bool Model::init() {
     // Front left leg
     Model::motors[1].min_pos = -0.73 - 0.5;
     Model::motors[1].max_pos = 0.0 - 0.3;
-    Model::motors[1].kp = 6;
+    Model::motors[1].kp = 2;
     Model::motors[2].min_pos = -0.7;
     Model::motors[2].max_pos = 0.7;
-    Model::motors[2].kp = 8;
+    Model::motors[2].kp = 2;
     Model::motors[3].min_pos = 0.20;
     Model::motors[3].max_pos = 1.5;
     Model::motors[3].kp = 2;

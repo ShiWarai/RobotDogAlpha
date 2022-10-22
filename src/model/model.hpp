@@ -5,7 +5,7 @@
 #include "motor.hpp"
 #include "command.hpp"
 
-const unsigned char MOTORS_COUNT = 12;
+const unsigned char MOTORS_COUNT = 3;
 
 class Model {
 public:
