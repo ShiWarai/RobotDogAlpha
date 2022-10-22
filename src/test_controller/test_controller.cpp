@@ -4,6 +4,7 @@
 void TestController::loop()
 {
     extern SemaphoreHandle_t model_changed;
+    vTaskDelay(5000/portTICK_PERIOD_MS);
 
     for (short i = 1; i <= MOTORS_COUNT; i++)
         Model::push_command(Command{ SET_ORIGIN, i, 0 });
