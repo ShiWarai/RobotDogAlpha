@@ -63,8 +63,8 @@ void setup()
 	MOTORS[4].max_pos = 1.5;
 	MOTORS[4].stiffness = 2;
 
-	MOTORS[5].min_pos = 0.2;
-	MOTORS[5].max_pos = 1.5;
+	MOTORS[5].min_pos = -1.5;
+	MOTORS[5].max_pos = 0.2;
 	MOTORS[5].stiffness = 2;
 }
 
