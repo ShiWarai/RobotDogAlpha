@@ -1,6 +1,6 @@
 #pragma once
 
-const unsigned char MOTORS_COUNT = 3;
+const unsigned char MOTORS_COUNT = 5;
 
 class Motor
 {
