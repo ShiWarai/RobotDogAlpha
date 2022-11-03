@@ -10,7 +10,7 @@
 #define CAN_COUNT 1
 #define DELAY 8
 
-mcp2515_can _can_buses[CAN_COUNT] = { mcp2515_can(5) };
+mcp2515_can _can_buses[CAN_COUNT] = { mcp2515_can(33) };
 
 Motor MOTORS[MOTORS_COUNT + 1]{ NULL, Motor(0), Motor(0), Motor(0), Motor(0), Motor(0), Motor(0)};
 
@@ -48,24 +48,24 @@ void setup()
 
 	MOTORS[1].min_pos = -0.73;
 	MOTORS[1].max_pos = -0.3;
-	MOTORS[1].stiffness = 2;
+	MOTORS[1].stiffness = 4;
 	MOTORS[2].min_pos = -0.7;
 	MOTORS[2].max_pos = 0.7;
-	MOTORS[2].stiffness = 2;
+	MOTORS[2].stiffness = 3;
 	MOTORS[3].min_pos = 0.2;
-	MOTORS[3].max_pos = 0.7;
-	MOTORS[3].stiffness = 1;
+	MOTORS[3].max_pos = 1.0;
+	MOTORS[3].stiffness = 2;
 
 	// Front right leg
 	MOTORS[4].min_pos = 0.3;
 	MOTORS[4].max_pos = 0.73;
-	MOTORS[4].stiffness = 2;
+	MOTORS[4].stiffness = 4;
 	MOTORS[5].min_pos = -0.3;
 	MOTORS[5].max_pos = 0.3;
-	MOTORS[5].stiffness = 2;
-	MOTORS[6].min_pos = -0.5;
+	MOTORS[5].stiffness = 3;
+	MOTORS[6].min_pos = -0.8;
 	MOTORS[6].max_pos = 0.2;
-	MOTORS[6].stiffness = 1;
+	MOTORS[6].stiffness = 2;
 }
 
 void loop()
