@@ -46,30 +46,26 @@ void setup()
 			vTaskDelay(100);
 	}
 
-  	// Front left leg
-	MOTORS[1].min_pos = 0.2;
-	MOTORS[1].max_pos = 1.5;
+	MOTORS[1].min_pos = -0.73;
+	MOTORS[1].max_pos = -0.3;
 	MOTORS[1].stiffness = 2;
-
-	MOTORS[2].min_pos = -1.5;
-	MOTORS[2].max_pos = -0.2;
+	MOTORS[2].min_pos = -0.7;
+	MOTORS[2].max_pos = 0.7;
 	MOTORS[2].stiffness = 2;
-
 	MOTORS[3].min_pos = 0.2;
-	MOTORS[3].max_pos = 1.5;
-	MOTORS[3].stiffness = 2;
+	MOTORS[3].max_pos = 0.7;
+	MOTORS[3].stiffness = 1;
 
-	MOTORS[4].min_pos = 0.2;
-	MOTORS[4].max_pos = 1.5;
+	// Front right leg
+	MOTORS[4].min_pos = 0.3;
+	MOTORS[4].max_pos = 0.73;
 	MOTORS[4].stiffness = 2;
-
-	MOTORS[5].min_pos = -1.5;
-	MOTORS[5].max_pos = -0.2;
+	MOTORS[5].min_pos = -0.3;
+	MOTORS[5].max_pos = 0.3;
 	MOTORS[5].stiffness = 2;
-
-	MOTORS[6].min_pos = 0.2;
-	MOTORS[6].max_pos = -1.5;
-	MOTORS[6].stiffness = 2;
+	MOTORS[6].min_pos = -0.5;
+	MOTORS[6].max_pos = 0.2;
+	MOTORS[6].stiffness = 1;
 }
 
 void loop()
@@ -134,7 +130,9 @@ void loop()
 			if (MOTORS[id]._can_id == -1)
 				continue;
 
-			pos = 0;
+			pos = (float)constrain(0.0, 0.0, 1.0);
+
+			pos = MOTORS[id].min_pos + pos * abs(MOTORS[id].max_pos - MOTORS[id].min_pos);
 
 			Serial.print("Move to ");
 			Serial.print(pos);
