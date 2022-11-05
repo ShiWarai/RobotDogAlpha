@@ -11,6 +11,7 @@
 #include "esp_err.h"
 
 #define MAC_PS4_JOYSTICK "4A:30:10:19:10:1A"
+#define PAIR_MAX_DEVICES 20
 
 class ClickableButton {
 private:
@@ -83,4 +84,5 @@ private:
     void cleanPairedDevices();
     char *bda2str(const uint8_t* bda, char *str, size_t size);
     bool initBluetooth();
+    bool disableBluetooth();
 };

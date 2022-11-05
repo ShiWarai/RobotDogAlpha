@@ -1,9 +1,4 @@
 #include "joystick_controller.hpp"
-#define REMOVE_BONDED_DEVICES 1   // <- Set to 0 to view all bonded devices addresses, set to 1 to remove
-
-#define PAIR_MAX_DEVICES 20
-uint8_t pairedDeviceBtAddr[PAIR_MAX_DEVICES][6];
-char bda_str[18];
 
 void JoystickController::loop()
 {
@@ -141,9 +136,12 @@ void JoystickController::loop()
 }
 
 void JoystickController::cleanPairedDevices() {
+    char bda_str[18];
+    uint8_t pairedDeviceBtAddr[PAIR_MAX_DEVICES][6];
+
     initBluetooth();
-    // Get the numbers of bonded/paired devices in the BT module
-    int count = esp_bt_gap_get_bond_device_num();
+
+    int count = esp_bt_gap_get_bond_device_num(); // Get the numbers of bonded/paired devices in the BT module
 
     if(count) {
         if(PAIR_MAX_DEVICES < count)
@@ -152,39 +150,46 @@ void JoystickController::cleanPairedDevices() {
         esp_err_t tError =  esp_bt_gap_get_bond_device_list(&count, pairedDeviceBtAddr);
         if(ESP_OK == tError) {
             for(int i = 0; i < count; i++) {
-                    Serial.print("Found bonded device # "); Serial.print(i); Serial.print(" -> ");
-                    Serial.println(bda2str(pairedDeviceBtAddr[i], bda_str, 18));     
-                    if(REMOVE_BONDED_DEVICES) {
-                        esp_err_t tError = esp_bt_gap_remove_bond_device(pairedDeviceBtAddr[i]);
-                        if(ESP_OK == tError) {
-                            Serial.print("Removed bonded device # "); 
-                        } else {
-                            Serial.print("Failed to remove bonded device # ");
-                        }
-                        Serial.println(i);
-                    }
+                esp_err_t tError = esp_bt_gap_remove_bond_device(pairedDeviceBtAddr[i]);
+                if(ESP_OK == tError) {
+                    Serial.print("Removed bonded device # "); 
+                } else {
+                    Serial.print("Failed to remove bonded device # ");
+                }
+                Serial.println(i);
             }
         }        
     }
+
+    disableBluetooth();
 }
 
 bool JoystickController::initBluetooth()
 {
-  if(!btStart()) {
-    Serial.println("Failed to initialize controller");
-    return false;
-  }
- 
-  if(esp_bluedroid_init() != ESP_OK) {
-    Serial.println("Failed to initialize bluedroid");
-    return false;
-  }
- 
-  if(esp_bluedroid_enable() != ESP_OK) {
-    Serial.println("Failed to enable bluedroid");
-    return false;
-  }
-  return true;
+    if(!btStart())
+        return false;
+
+    if(esp_bluedroid_init() != ESP_OK)
+        return false;
+
+    if(esp_bluedroid_enable() != ESP_OK)
+        return false;
+
+    return true;
+}
+
+bool JoystickController::disableBluetooth()
+{
+    if(esp_bluedroid_disable() != ESP_OK)
+        return false;
+
+    if(esp_bluedroid_deinit() != ESP_OK)
+        return false;
+
+    if(!btStop())
+        return false;
+
+    return true;
 }
 
 char* JoystickController::bda2str(const uint8_t* bda, char *str, size_t size)
