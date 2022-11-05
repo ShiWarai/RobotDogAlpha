@@ -10,7 +10,7 @@
 #include"esp_gap_bt_api.h"
 #include "esp_err.h"
 
-#define MAC_PS4_JOYSTICK "c0:e4:34:4f:b0:4d"
+#define MAC_PS4_JOYSTICK "4A:30:10:19:10:1A"
 
 class ClickableButton {
 private:

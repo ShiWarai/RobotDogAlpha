@@ -19,6 +19,8 @@ void JoystickController::loop()
     ClickableButton setOriginButton;
     ClickableButton moveToOriginButton;
 
+    cleanPairedDevices();
+
     PS4.begin(MAC_PS4_JOYSTICK);
     PS4.setLed(255, 255, 0);
 
