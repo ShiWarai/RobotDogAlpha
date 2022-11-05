@@ -5,6 +5,10 @@
 #include "../model/command.hpp"
 #include "../model/model.hpp"
 #include <PS4Controller.h>
+#include "esp_bt_main.h"
+#include "esp_bt_device.h"
+#include"esp_gap_bt_api.h"
+#include "esp_err.h"
 
 #define MAC_PS4_JOYSTICK "c0:e4:34:4f:b0:4d"
 
@@ -75,4 +79,8 @@ class JoystickController
 public:
     JoystickController() {};
     void loop();
+private:
+    void cleanPairedDevices();
+    char *bda2str(const uint8_t* bda, char *str, size_t size);
+    bool initBluetooth();
 };
