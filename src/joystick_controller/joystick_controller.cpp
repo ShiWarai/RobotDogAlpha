@@ -1,6 +1,5 @@
 #include "joystick_controller.hpp"
 
-
 void JoystickController::loop()
 {
     extern SemaphoreHandle_t model_changed;
@@ -14,6 +13,8 @@ void JoystickController::loop()
     ButtonWithState sharePosesButton;
     ClickableButton setOriginButton;
     ClickableButton moveToOriginButton;
+
+    cleanPairedDevices();
 
     PS4.begin(MAC_PS4_JOYSTICK);
     PS4.setLed(255, 255, 0);
@@ -132,4 +133,71 @@ void JoystickController::loop()
 
         vTaskDelay(100);
     }
+}
+
+void JoystickController::cleanPairedDevices() {
+    char bda_str[18];
+    uint8_t pairedDeviceBtAddr[PAIR_MAX_DEVICES][6];
+
+    initBluetooth();
+
+    int count = esp_bt_gap_get_bond_device_num(); // Get the numbers of bonded/paired devices in the BT module
+
+    if(count) {
+        if(PAIR_MAX_DEVICES < count)
+            count = PAIR_MAX_DEVICES;
+
+        esp_err_t tError =  esp_bt_gap_get_bond_device_list(&count, pairedDeviceBtAddr);
+        if(ESP_OK == tError) {
+            for(int i = 0; i < count; i++) {
+                esp_err_t tError = esp_bt_gap_remove_bond_device(pairedDeviceBtAddr[i]);
+                if(ESP_OK == tError) {
+                    Serial.print("Removed bonded device # "); 
+                } else {
+                    Serial.print("Failed to remove bonded device # ");
+                }
+                Serial.println(i);
+            }
+        }        
+    }
+
+    disableBluetooth();
+}
+
+bool JoystickController::initBluetooth()
+{
+    if(!btStart())
+        return false;
+
+    if(esp_bluedroid_init() != ESP_OK)
+        return false;
+
+    if(esp_bluedroid_enable() != ESP_OK)
+        return false;
+
+    return true;
+}
+
+bool JoystickController::disableBluetooth()
+{
+    if(esp_bluedroid_disable() != ESP_OK)
+        return false;
+
+    if(esp_bluedroid_deinit() != ESP_OK)
+        return false;
+
+    if(!btStop())
+        return false;
+
+    return true;
+}
+
+char* JoystickController::bda2str(const uint8_t* bda, char *str, size_t size)
+{
+  if (bda == NULL || str == NULL || size < 18) {
+    return NULL;
+  }
+  sprintf(str, "%02x:%02x:%02x:%02x:%02x:%02x",
+          bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
+  return str;
 }
