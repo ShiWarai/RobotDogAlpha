@@ -8,9 +8,14 @@ void JoystickController::loop()
     float p_pos1, p_pos2, p_pos3;
     float n_pos1, n_pos2, n_pos3;
 
+    int movement_tick = 0;
+    const int MAX_MOVENENT_TICKS = 6;
+    const float MOVEMENT_STATES_POS[MAX_MOVENENT_TICKS][3] = {{0.0, 0.0, 0.0}, {0.2, 0.2, 0.2}, {0.3, 0.3, 0.3}, {0.3, 0.3, 0.3}, {0.1, 0.1, 0.1}, {0.0, 0.0, 0.0}};
+
     ButtonWithState motorSwitch;
     bool motorOnLast = false;
     ButtonWithState sharePosesButton;
+    ButtonWithState legsMovingButton;
     ClickableButton setOriginButton;
     ClickableButton moveToOriginButton;
 
@@ -26,7 +31,7 @@ void JoystickController::loop()
             pos2 = PS4.LStickY();
             pos3 = PS4.RStickY();
 
-            // Sending the commands
+
             if (motorSwitch.turn(PS4.PSButton())) {
                 if (motorSwitch.state() != motorOnLast)
                 {
@@ -34,9 +39,7 @@ void JoystickController::loop()
                     for (short i = 1; i <= MOTORS_COUNT; i++)
                         Model::push_command(Command{ MOTOR_ON, i, 0 });
 
-                    xSemaphoreGive(model_changed);
-                    vTaskDelay(100);
-                    xSemaphoreTake(model_changed, portMAX_DELAY);
+                    this->updateModel(model_changed);
 
                     motorOnLast = true;
                 }
@@ -48,9 +51,7 @@ void JoystickController::loop()
                     for (short i = 1; i <= MOTORS_COUNT; i++)
                         Model::push_command(Command{ MOTOR_OFF, i, 0 });
 
-                    xSemaphoreGive(model_changed);
-                    vTaskDelay(100);
-                    xSemaphoreTake(model_changed, portMAX_DELAY);
+                    this->updateModel(model_changed);
 
                     motorOnLast = false;
                 }
@@ -60,23 +61,53 @@ void JoystickController::loop()
                 for (short i = 1; i <= MOTORS_COUNT; i++)
                     Model::push_command(Command{ MOTOR_NONE, i, 0 });
 
-                xSemaphoreGive(model_changed);
-                vTaskDelay(100);
-                xSemaphoreTake(model_changed, portMAX_DELAY);
+                this->updateModel(model_changed);
             }
 
             if (setOriginButton.turn(PS4.Options())) {
                 for (short i = 1; i <= MOTORS_COUNT; i++)
                     Model::push_command(Command{ SET_ORIGIN, i, 0 });
 
-                xSemaphoreGive(model_changed);
-                vTaskDelay(100);
-                xSemaphoreTake(model_changed, portMAX_DELAY);
+                this->updateModel(model_changed);
                 PS4.setLed(255, 0, 0);
-            } 
+            }
+
+            if (legsMovingButton.turn(PS4.Cross())) {
+
+                // Test for 1 leg
+                Model::motors[1].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][1-1]);
+				Model::motors[2].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][2-1]);
+				Model::motors[3].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][3-1]);
+
+                /* 2
+                Model::motors[4].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS/2)) % MAX_MOVENENT_TICKS][4-1]);
+                Model::motors[5].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS/2)) % MAX_MOVENENT_TICKS][5-1]);
+                Model::motors[6].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS/2)) % MAX_MOVENENT_TICKS][6-1]);
+                */
+
+                movement_tick++;
+
+                if(movement_tick >= MAX_MOVENENT_TICKS) {
+                    movement_tick = 0;
+                }
+
+                this->updateModel(model_changed);
+                vTaskDelay(1000);
+
+                PS4.setRumble(20, 0);
+                PS4.setLed(124, 0, 255);
+            } else {
+                movement_tick = 0;
+
+                PS4.setRumble(0, 0);
+
+                if(motorOnLast)
+                    PS4.setLed(0, 128, 0);
+                else
+                    PS4.setLed(255, 0, 0);
+            }
 
             if (sharePosesButton.turn(PS4.Share())) {
-                PS4.setRumble(20, 0);
 
                 p_pos1 = float(128 + pos1) / 256;
                 p_pos2 = float(128 + pos2) / 256;
@@ -120,19 +151,26 @@ void JoystickController::loop()
                 Model::push_command(Command{ CONTROL, 12, n_pos3 });
 				*/
 
+                PS4.setRumble(20, 0);
+
                 xSemaphoreGive(model_changed);
                 taskYIELD();
                 xSemaphoreTake(model_changed, portMAX_DELAY);
-            }
-            else {
+            } else {
                 PS4.setRumble(0, 0);
             }
 
-            PS4.sendToController();
+            PS4.sendToController(); // !!! Replace !!!
         }
 
         vTaskDelay(100);
     }
+}
+
+void JoystickController::updateModel(SemaphoreHandle_t model_changed) {
+    xSemaphoreGive(model_changed);
+    vTaskDelay(100);
+    xSemaphoreTake(model_changed, portMAX_DELAY);
 }
 
 void JoystickController::cleanPairedDevices() {
