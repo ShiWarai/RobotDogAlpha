@@ -85,13 +85,13 @@ void JoystickController::loop()
                 Model::motors[5].set_position_by_procent(1 - MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][2-1]);
                 Model::motors[6].set_position_by_procent(1 - MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][3-1]);
 
-                Model::motors[7].set_position_by_procent(1 - MOVEMENT_STATES_POS[movement_tick][1-1]);
-                Model::motors[8].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][2-1]);
-                Model::motors[9].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][3-1]);
+                Model::motors[7].set_position_by_procent(1 - MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][1-1]);
+                Model::motors[8].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][2-1]);
+                Model::motors[9].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][3-1]);
 
-                Model::motors[10].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][1-1]);
-                Model::motors[11].set_position_by_procent(1 - MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][2-1]);
-                Model::motors[12].set_position_by_procent(1 - MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][3-1]);
+                Model::motors[10].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][1-1]);
+                Model::motors[11].set_position_by_procent(1 - MOVEMENT_STATES_POS[movement_tick][2-1]);
+                Model::motors[12].set_position_by_procent(1 - MOVEMENT_STATES_POS[movement_tick][3-1]);
 
                 movement_tick++;
 
@@ -136,6 +136,23 @@ void JoystickController::loop()
                 Model::motors[3].set_position_by_procent(n_pos3);
 
                 Model::motors[4].set_position_by_procent(p_pos1);
+                Model::motors[5].set_position_by_procent(n_pos2);
+                Model::motors[6].set_position_by_procent(n_pos3);
+
+                Model::motors[7].set_position_by_procent(p_pos1);
+                Model::motors[8].set_position_by_procent(p_pos2);
+                Model::motors[9].set_position_by_procent(p_pos3);
+
+                Model::motors[10].set_position_by_procent(n_pos1);
+                Model::motors[11].set_position_by_procent(p_pos2);
+                Model::motors[12].set_position_by_procent(p_pos3);
+
+                /*
+                Model::motors[1].set_position_by_procent(n_pos1);
+                Model::motors[2].set_position_by_procent(n_pos2);
+                Model::motors[3].set_position_by_procent(n_pos3);
+
+                Model::motors[4].set_position_by_procent(p_pos1);
                 Model::motors[5].set_position_by_procent(p_pos2);
                 Model::motors[6].set_position_by_procent(p_pos3);
 
@@ -146,24 +163,7 @@ void JoystickController::loop()
                 Model::motors[10].set_position_by_procent(n_pos1);
                 Model::motors[11].set_position_by_procent(p_pos2);
                 Model::motors[12].set_position_by_procent(p_pos3);
-
-				/*
-                Model::push_command(Command{ CONTROL, 1, p_pos1 });
-                Model::push_command(Command{ CONTROL, 2, p_pos2 });
-                Model::push_command(Command{ CONTROL, 3, p_pos3 });
-
-                Model::push_command(Command{ CONTROL, 4, n_pos1 });
-                Model::push_command(Command{ CONTROL, 5, n_pos2 });
-                Model::push_command(Command{ CONTROL, 6, n_pos3 });
-
-                Model::push_command(Command{ CONTROL, 7, n_pos1 });
-                Model::push_command(Command{ CONTROL, 8, p_pos2 });
-                Model::push_command(Command{ CONTROL, 9, n_pos3 });
-
-                Model::push_command(Command{ CONTROL, 10, n_pos1 });
-                Model::push_command(Command{ CONTROL, 11, n_pos2 });
-                Model::push_command(Command{ CONTROL, 12, n_pos3 });
-				*/
+                */
 
                 PS4.setRumble(20, 0);
 
