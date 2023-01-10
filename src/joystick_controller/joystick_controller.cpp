@@ -82,8 +82,16 @@ void JoystickController::loop()
                 Model::motors[3].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][3-1]);
 
                 Model::motors[4].set_position_by_procent(1 - MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][1-1]);
-                Model::motors[5].set_position_by_procent(1 - MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][2 - 1]);
+                Model::motors[5].set_position_by_procent(1 - MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][2-1]);
                 Model::motors[6].set_position_by_procent(1 - MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][3-1]);
+
+                Model::motors[7].set_position_by_procent(1 - MOVEMENT_STATES_POS[movement_tick][1-1]);
+                Model::motors[8].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][2-1]);
+                Model::motors[9].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][3-1]);
+
+                Model::motors[10].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][1-1]);
+                Model::motors[11].set_position_by_procent(1 - MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][2-1]);
+                Model::motors[12].set_position_by_procent(1 - MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][3-1]);
 
                 /* 2
                 Model::motors[4].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS/2)) % MAX_MOVENENT_TICKS][4-1]);
