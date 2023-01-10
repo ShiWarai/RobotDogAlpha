@@ -9,8 +9,8 @@ void JoystickController::loop()
     float n_pos1, n_pos2, n_pos3;
 
     int movement_tick = 0;
-    const int MAX_MOVENENT_TICKS = 6;
-    const float MOVEMENT_STATES_POS[MAX_MOVENENT_TICKS][3] = {{0.0, 0.0, 0.0}, {0.2, 0.2, 0.2}, {0.3, 0.3, 0.3}, {0.3, 0.3, 0.3}, {0.1, 0.1, 0.1}, {0.0, 0.0, 0.0}};
+    const int MAX_MOVENENT_TICKS = 4;
+    const float MOVEMENT_STATES_POS[MAX_MOVENENT_TICKS][3] = {{0.7, 0.7, 0.8}, {0.7, 0.85, 0.6}, {0.7, 1.0, 0.4}, {0.7, 0.85, 0.6}};
 
     ButtonWithState motorSwitch;
     bool motorOnLast = false;
@@ -55,6 +55,7 @@ void JoystickController::loop()
                     this->updateModel(model_changed);
 
                     motorOnLast = false;
+                    legsMovingLast = false;
                 }
             }
 
@@ -74,52 +75,47 @@ void JoystickController::loop()
             }
 
             if (legsMovingButton.turn(PS4.Cross())) {
-                if(legsMovingButton.state()) {
-                    // Test for 1 leg
-                    Serial.print("Movement tick: ");
-                    Serial.println(movement_tick);
-                    Serial.println(MOVEMENT_STATES_POS[movement_tick][1 - 1]);
-                    Serial.println(MOVEMENT_STATES_POS[movement_tick][2 - 1]);
-                    Serial.println(MOVEMENT_STATES_POS[movement_tick][3 - 1]);
-                    Serial.println();
+                legsMovingLast = true;
 
-                    //Model::motors[1].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][1-1]);
-                    //Model::motors[2].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][2-1]);
-                    //Model::motors[3].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][3-1]);
+                Model::motors[1].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][1-1]);
+                Model::motors[2].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][2-1]);
+                Model::motors[3].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][3-1]);
 
-                    /* 2
-                    Model::motors[4].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS/2)) % MAX_MOVENENT_TICKS][4-1]);
-                    Model::motors[5].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS/2)) % MAX_MOVENENT_TICKS][5-1]);
-                    Model::motors[6].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS/2)) % MAX_MOVENENT_TICKS][6-1]);
-                    */
+                Model::motors[4].set_position_by_procent(1 - MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][1-1]);
+                Model::motors[5].set_position_by_procent(1 - MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][2 - 1]);
+                Model::motors[6].set_position_by_procent(1 - MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][3-1]);
 
-                    movement_tick++;
+                /* 2
+                Model::motors[4].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS/2)) % MAX_MOVENENT_TICKS][4-1]);
+                Model::motors[5].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS/2)) % MAX_MOVENENT_TICKS][5-1]);
+                Model::motors[6].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS/2)) % MAX_MOVENENT_TICKS][6-1]);
+                */
 
-                    if(movement_tick >= MAX_MOVENENT_TICKS) {
-                        movement_tick = 0;
-                    }
+                movement_tick++;
 
-                    xSemaphoreGive(model_changed);
-                    vTaskDelay(1000);
-                    xSemaphoreTake(model_changed, portMAX_DELAY);
+                if(movement_tick >= MAX_MOVENENT_TICKS) {
+                    movement_tick = 0;
+                }
 
-                    PS4.setRumble(20, 0);
-                    PS4.setLed(124, 0, 255);
+                xSemaphoreGive(model_changed);
+                vTaskDelay(500);
+                xSemaphoreTake(model_changed, portMAX_DELAY);
 
-                    legsMovingLast = true;
-                } else {
-                    Serial.print("Stop!");
+                PS4.setRumble(20, 0);
+                PS4.setLed(124, 0, 255);
+            }
+            else {
+                if (legsMovingLast) {
 
                     movement_tick = 0;
+                    legsMovingLast = false;
 
                     PS4.setRumble(0, 0);
 
-                    if(motorOnLast)
+                    if (motorOnLast)
                         PS4.setLed(0, 128, 0);
                     else
                         PS4.setLed(255, 0, 0);
-
-                    legsMovingLast = false;
                 }
             }
 
