@@ -16,6 +16,7 @@ void JoystickController::loop()
     bool motorOnLast = false;
     ButtonWithState sharePosesButton;
     ButtonWithState legsMovingButton;
+    bool legsMovingLast = false;
     ClickableButton setOriginButton;
     ClickableButton moveToOriginButton;
 
@@ -73,45 +74,53 @@ void JoystickController::loop()
             }
 
             if (legsMovingButton.turn(PS4.Cross())) {
+                if(legsMovingButton.state() != legsMovingLast) {
+                    // Test for 1 leg
+                    Serial.print("Movement tick: ");
+                    Serial.println(movement_tick);
+                    Serial.println(MOVEMENT_STATES_POS[movement_tick][1 - 1]);
+                    Serial.println(MOVEMENT_STATES_POS[movement_tick][2 - 1]);
+                    Serial.println(MOVEMENT_STATES_POS[movement_tick][3 - 1]);
+                    Serial.println();
 
-                // Test for 1 leg
-                Serial.print("Movement tick: ");
-                Serial.println(movement_tick);
-                Serial.println(MOVEMENT_STATES_POS[movement_tick][1 - 1]);
-                Serial.println(MOVEMENT_STATES_POS[movement_tick][2 - 1]);
-                Serial.println(MOVEMENT_STATES_POS[movement_tick][3 - 1]);
-                Serial.println();
-                //Model::motors[1].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][1-1]);
-				//Model::motors[2].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][2-1]);
-				//Model::motors[3].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][3-1]);
+                    //Model::motors[1].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][1-1]);
+                    //Model::motors[2].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][2-1]);
+                    //Model::motors[3].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][3-1]);
 
-                /* 2
-                Model::motors[4].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS/2)) % MAX_MOVENENT_TICKS][4-1]);
-                Model::motors[5].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS/2)) % MAX_MOVENENT_TICKS][5-1]);
-                Model::motors[6].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS/2)) % MAX_MOVENENT_TICKS][6-1]);
-                */
+                    /* 2
+                    Model::motors[4].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS/2)) % MAX_MOVENENT_TICKS][4-1]);
+                    Model::motors[5].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS/2)) % MAX_MOVENENT_TICKS][5-1]);
+                    Model::motors[6].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS/2)) % MAX_MOVENENT_TICKS][6-1]);
+                    */
 
-                movement_tick++;
+                    movement_tick++;
 
-                if(movement_tick >= MAX_MOVENENT_TICKS) {
-                    movement_tick = 0;
+                    if(movement_tick >= MAX_MOVENENT_TICKS) {
+                        movement_tick = 0;
+                    }
+
+                    xSemaphoreGive(model_changed);
+                    vTaskDelay(1000);
+                    xSemaphoreTake(model_changed, portMAX_DELAY);
+
+                    PS4.setRumble(20, 0);
+                    PS4.setLed(124, 0, 255);
+
+                    legsMovingLast = true;
                 }
-
-                xSemaphoreGive(model_changed);
-                vTaskDelay(1000);
-                xSemaphoreTake(model_changed, portMAX_DELAY);
-
-                PS4.setRumble(20, 0);
-                PS4.setLed(124, 0, 255);
             } else {
-                movement_tick = 0;
+                if(legsMovingButton.state() != legsMovingLast) {
+                    movement_tick = 0;
 
-                //PS4.setRumble(0, 0);
+                    PS4.setRumble(0, 0);
 
-                //if(motorOnLast)
-                //    PS4.setLed(0, 128, 0);
-                //else
-                //    PS4.setLed(255, 0, 0);
+                    if(motorOnLast)
+                        PS4.setLed(0, 128, 0);
+                    else
+                        PS4.setLed(255, 0, 0);
+
+                    legsMovingLast = false;
+                }
             }
 
             if (sharePosesButton.turn(PS4.Share())) {
