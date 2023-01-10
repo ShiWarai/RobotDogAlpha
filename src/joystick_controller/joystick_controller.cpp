@@ -74,7 +74,7 @@ void JoystickController::loop()
             }
 
             if (legsMovingButton.turn(PS4.Cross())) {
-                if(legsMovingButton.state() != legsMovingLast) {
+                if(legsMovingButton.state()) {
                     // Test for 1 leg
                     Serial.print("Movement tick: ");
                     Serial.println(movement_tick);
@@ -107,9 +107,9 @@ void JoystickController::loop()
                     PS4.setLed(124, 0, 255);
 
                     legsMovingLast = true;
-                }
-            } else {
-                if(legsMovingButton.state() != legsMovingLast) {
+                } else {
+                    Serial.print("Stop!");
+
                     movement_tick = 0;
 
                     PS4.setRumble(0, 0);
