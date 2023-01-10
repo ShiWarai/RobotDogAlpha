@@ -42,8 +42,8 @@ bool Model::init() {
     Model::motors[7].min_pos = -0.73 - 0.5;
     Model::motors[7].max_pos = 0.0 - 0.3;
     Model::motors[7].kp = 6;
-    Model::motors[8].min_pos = -0.7;
-    Model::motors[8].max_pos = 0.7;
+    Model::motors[8].min_pos = -1.0;
+    Model::motors[8].max_pos = 1.0;
     Model::motors[8].kp = 5;
     Model::motors[9].min_pos = -1.5;
     Model::motors[9].max_pos = 0.2;
@@ -53,8 +53,8 @@ bool Model::init() {
     Model::motors[10].min_pos = 0.0 + 0.3;
     Model::motors[10].max_pos = 0.73 + 0.2;
     Model::motors[10].kp = 6;
-    Model::motors[11].min_pos = -0.7;
-    Model::motors[11].max_pos = 0.7;
+    Model::motors[11].min_pos = -1.0;
+    Model::motors[11].max_pos = 1.0;
     Model::motors[11].kp = 5;
     Model::motors[12].min_pos = 0.20;
     Model::motors[12].max_pos = 1.5;

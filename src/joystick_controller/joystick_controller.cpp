@@ -93,12 +93,6 @@ void JoystickController::loop()
                 Model::motors[11].set_position_by_procent(1 - MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][2-1]);
                 Model::motors[12].set_position_by_procent(1 - MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][3-1]);
 
-                /* 2
-                Model::motors[4].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS/2)) % MAX_MOVENENT_TICKS][4-1]);
-                Model::motors[5].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS/2)) % MAX_MOVENENT_TICKS][5-1]);
-                Model::motors[6].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS/2)) % MAX_MOVENENT_TICKS][6-1]);
-                */
-
                 movement_tick++;
 
                 if(movement_tick >= MAX_MOVENENT_TICKS) {
