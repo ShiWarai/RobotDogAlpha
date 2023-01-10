@@ -75,9 +75,15 @@ void JoystickController::loop()
             if (legsMovingButton.turn(PS4.Cross())) {
 
                 // Test for 1 leg
-                Model::motors[1].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][1-1]);
-				Model::motors[2].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][2-1]);
-				Model::motors[3].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][3-1]);
+                Serial.print("Movement tick: ");
+                Serial.println(movement_tick);
+                Serial.println(MOVEMENT_STATES_POS[movement_tick][1 - 1]);
+                Serial.println(MOVEMENT_STATES_POS[movement_tick][2 - 1]);
+                Serial.println(MOVEMENT_STATES_POS[movement_tick][3 - 1]);
+                Serial.println();
+                //Model::motors[1].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][1-1]);
+				//Model::motors[2].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][2-1]);
+				//Model::motors[3].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][3-1]);
 
                 /* 2
                 Model::motors[4].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS/2)) % MAX_MOVENENT_TICKS][4-1]);
@@ -91,20 +97,21 @@ void JoystickController::loop()
                     movement_tick = 0;
                 }
 
-                this->updateModel(model_changed);
+                xSemaphoreGive(model_changed);
                 vTaskDelay(1000);
+                xSemaphoreTake(model_changed, portMAX_DELAY);
 
                 PS4.setRumble(20, 0);
                 PS4.setLed(124, 0, 255);
             } else {
                 movement_tick = 0;
 
-                PS4.setRumble(0, 0);
+                //PS4.setRumble(0, 0);
 
-                if(motorOnLast)
-                    PS4.setLed(0, 128, 0);
-                else
-                    PS4.setLed(255, 0, 0);
+                //if(motorOnLast)
+                //    PS4.setLed(0, 128, 0);
+                //else
+                //    PS4.setLed(255, 0, 0);
             }
 
             if (sharePosesButton.turn(PS4.Share())) {
@@ -117,21 +124,21 @@ void JoystickController::loop()
                 n_pos2 = float(128 + -pos2) / 256;
                 n_pos3 = float(128 + -pos3) / 256;
 
-				Model::motors[1].set_position_by_procent(p_pos1);
-				Model::motors[2].set_position_by_procent(p_pos2);
-				Model::motors[3].set_position_by_procent(p_pos3);
+                Model::motors[1].set_position_by_procent(n_pos1);
+                Model::motors[2].set_position_by_procent(n_pos2);
+                Model::motors[3].set_position_by_procent(n_pos3);
 
-                Model::motors[4].set_position_by_procent(n_pos1);
-                Model::motors[5].set_position_by_procent(n_pos2);
-                Model::motors[6].set_position_by_procent(n_pos3);
+                Model::motors[4].set_position_by_procent(p_pos1);
+                Model::motors[5].set_position_by_procent(p_pos2);
+                Model::motors[6].set_position_by_procent(p_pos3);
 
-                Model::motors[7].set_position_by_procent(n_pos1);
-				Model::motors[8].set_position_by_procent(p_pos2);
-				Model::motors[9].set_position_by_procent(n_pos3);
+                Model::motors[7].set_position_by_procent(p_pos1);
+                Model::motors[8].set_position_by_procent(n_pos2);
+                Model::motors[9].set_position_by_procent(n_pos3);
 
                 Model::motors[10].set_position_by_procent(n_pos1);
-                Model::motors[11].set_position_by_procent(n_pos2);
-                Model::motors[12].set_position_by_procent(n_pos3);
+                Model::motors[11].set_position_by_procent(p_pos2);
+                Model::motors[12].set_position_by_procent(p_pos3);
 
 				/*
                 Model::push_command(Command{ CONTROL, 1, p_pos1 });
@@ -163,7 +170,7 @@ void JoystickController::loop()
             PS4.sendToController(); // !!! Replace !!!
         }
 
-        vTaskDelay(100);
+        vTaskDelay(32);
     }
 }
 
