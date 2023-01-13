@@ -81,6 +81,10 @@ public:
     JoystickController() {};
     void loop();
 private:
+    // Misc
+    void updateModel(SemaphoreHandle_t model_changed);
+
+    // Bluetooth
     void cleanPairedDevices();
     char *bda2str(const uint8_t* bda, char *str, size_t size);
     bool initBluetooth();

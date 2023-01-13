@@ -8,9 +8,15 @@ void JoystickController::loop()
     float p_pos1, p_pos2, p_pos3;
     float n_pos1, n_pos2, n_pos3;
 
+    int movement_tick = 0;
+    const int MAX_MOVENENT_TICKS = 4;
+    const float MOVEMENT_STATES_POS[MAX_MOVENENT_TICKS][3] = {{0.7, 0.7, 0.8}, {0.7, 0.85, 0.6}, {0.7, 1.0, 0.4}, {0.7, 0.85, 0.6}};
+
     ButtonWithState motorSwitch;
     bool motorOnLast = false;
     ButtonWithState sharePosesButton;
+    ButtonWithState legsMovingButton;
+    bool legsMovingLast = false;
     ClickableButton setOriginButton;
     ClickableButton moveToOriginButton;
 
@@ -26,7 +32,7 @@ void JoystickController::loop()
             pos2 = PS4.LStickY();
             pos3 = PS4.RStickY();
 
-            // Sending the commands
+
             if (motorSwitch.turn(PS4.PSButton())) {
                 if (motorSwitch.state() != motorOnLast)
                 {
@@ -34,9 +40,7 @@ void JoystickController::loop()
                     for (short i = 1; i <= MOTORS_COUNT; i++)
                         Model::push_command(Command{ MOTOR_ON, i, 0 });
 
-                    xSemaphoreGive(model_changed);
-                    vTaskDelay(100);
-                    xSemaphoreTake(model_changed, portMAX_DELAY);
+                    this->updateModel(model_changed);
 
                     motorOnLast = true;
                 }
@@ -48,11 +52,10 @@ void JoystickController::loop()
                     for (short i = 1; i <= MOTORS_COUNT; i++)
                         Model::push_command(Command{ MOTOR_OFF, i, 0 });
 
-                    xSemaphoreGive(model_changed);
-                    vTaskDelay(100);
-                    xSemaphoreTake(model_changed, portMAX_DELAY);
+                    this->updateModel(model_changed);
 
                     motorOnLast = false;
+                    legsMovingLast = false;
                 }
             }
 
@@ -60,23 +63,65 @@ void JoystickController::loop()
                 for (short i = 1; i <= MOTORS_COUNT; i++)
                     Model::push_command(Command{ MOTOR_NONE, i, 0 });
 
-                xSemaphoreGive(model_changed);
-                vTaskDelay(100);
-                xSemaphoreTake(model_changed, portMAX_DELAY);
+                this->updateModel(model_changed);
             }
 
             if (setOriginButton.turn(PS4.Options())) {
                 for (short i = 1; i <= MOTORS_COUNT; i++)
                     Model::push_command(Command{ SET_ORIGIN, i, 0 });
 
-                xSemaphoreGive(model_changed);
-                vTaskDelay(100);
-                xSemaphoreTake(model_changed, portMAX_DELAY);
+                this->updateModel(model_changed);
                 PS4.setLed(255, 0, 0);
-            } 
+            }
+
+            if (legsMovingButton.turn(PS4.Cross())) {
+                legsMovingLast = true;
+
+                Model::motors[1].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][1-1]);
+                Model::motors[2].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][2-1]);
+                Model::motors[3].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][3-1]);
+
+                Model::motors[4].set_position_by_procent(1 - MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][1-1]);
+                Model::motors[5].set_position_by_procent(1 - MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][2-1]);
+                Model::motors[6].set_position_by_procent(1 - MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][3-1]);
+
+                Model::motors[7].set_position_by_procent(1 - MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][1-1]);
+                Model::motors[8].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][2-1]);
+                Model::motors[9].set_position_by_procent(MOVEMENT_STATES_POS[(movement_tick + (MAX_MOVENENT_TICKS / 2)) % MAX_MOVENENT_TICKS][3-1]);
+
+                Model::motors[10].set_position_by_procent(MOVEMENT_STATES_POS[movement_tick][1-1]);
+                Model::motors[11].set_position_by_procent(1 - MOVEMENT_STATES_POS[movement_tick][2-1]);
+                Model::motors[12].set_position_by_procent(1 - MOVEMENT_STATES_POS[movement_tick][3-1]);
+
+                movement_tick++;
+
+                if(movement_tick >= MAX_MOVENENT_TICKS) {
+                    movement_tick = 0;
+                }
+
+                xSemaphoreGive(model_changed);
+                vTaskDelay(500);
+                xSemaphoreTake(model_changed, portMAX_DELAY);
+
+                PS4.setRumble(20, 0);
+                PS4.setLed(124, 0, 255);
+            }
+            else {
+                if (legsMovingLast) {
+
+                    movement_tick = 0;
+                    legsMovingLast = false;
+
+                    PS4.setRumble(0, 0);
+
+                    if (motorOnLast)
+                        PS4.setLed(0, 128, 0);
+                    else
+                        PS4.setLed(255, 0, 0);
+                }
+            }
 
             if (sharePosesButton.turn(PS4.Share())) {
-                PS4.setRumble(20, 0);
 
                 p_pos1 = float(128 + pos1) / 256;
                 p_pos2 = float(128 + pos2) / 256;
@@ -86,53 +131,60 @@ void JoystickController::loop()
                 n_pos2 = float(128 + -pos2) / 256;
                 n_pos3 = float(128 + -pos3) / 256;
 
-				Model::motors[1].set_position_by_procent(p_pos1);
-				Model::motors[2].set_position_by_procent(p_pos2);
-				Model::motors[3].set_position_by_procent(p_pos3);
+                Model::motors[1].set_position_by_procent(n_pos1);
+                Model::motors[2].set_position_by_procent(n_pos2);
+                Model::motors[3].set_position_by_procent(n_pos3);
 
-                Model::motors[4].set_position_by_procent(n_pos1);
+                Model::motors[4].set_position_by_procent(p_pos1);
                 Model::motors[5].set_position_by_procent(n_pos2);
                 Model::motors[6].set_position_by_procent(n_pos3);
 
-                Model::motors[7].set_position_by_procent(n_pos1);
-				Model::motors[8].set_position_by_procent(p_pos2);
-				Model::motors[9].set_position_by_procent(n_pos3);
+                Model::motors[7].set_position_by_procent(p_pos1);
+                Model::motors[8].set_position_by_procent(p_pos2);
+                Model::motors[9].set_position_by_procent(p_pos3);
 
                 Model::motors[10].set_position_by_procent(n_pos1);
-                Model::motors[11].set_position_by_procent(n_pos2);
-                Model::motors[12].set_position_by_procent(n_pos3);
+                Model::motors[11].set_position_by_procent(p_pos2);
+                Model::motors[12].set_position_by_procent(p_pos3);
 
-				/*
-                Model::push_command(Command{ CONTROL, 1, p_pos1 });
-                Model::push_command(Command{ CONTROL, 2, p_pos2 });
-                Model::push_command(Command{ CONTROL, 3, p_pos3 });
+                /*
+                Model::motors[1].set_position_by_procent(n_pos1);
+                Model::motors[2].set_position_by_procent(n_pos2);
+                Model::motors[3].set_position_by_procent(n_pos3);
 
-                Model::push_command(Command{ CONTROL, 4, n_pos1 });
-                Model::push_command(Command{ CONTROL, 5, n_pos2 });
-                Model::push_command(Command{ CONTROL, 6, n_pos3 });
+                Model::motors[4].set_position_by_procent(p_pos1);
+                Model::motors[5].set_position_by_procent(p_pos2);
+                Model::motors[6].set_position_by_procent(p_pos3);
 
-                Model::push_command(Command{ CONTROL, 7, n_pos1 });
-                Model::push_command(Command{ CONTROL, 8, p_pos2 });
-                Model::push_command(Command{ CONTROL, 9, n_pos3 });
+                Model::motors[7].set_position_by_procent(p_pos1);
+                Model::motors[8].set_position_by_procent(n_pos2);
+                Model::motors[9].set_position_by_procent(n_pos3);
 
-                Model::push_command(Command{ CONTROL, 10, n_pos1 });
-                Model::push_command(Command{ CONTROL, 11, n_pos2 });
-                Model::push_command(Command{ CONTROL, 12, n_pos3 });
-				*/
+                Model::motors[10].set_position_by_procent(n_pos1);
+                Model::motors[11].set_position_by_procent(p_pos2);
+                Model::motors[12].set_position_by_procent(p_pos3);
+                */
+
+                PS4.setRumble(20, 0);
 
                 xSemaphoreGive(model_changed);
                 taskYIELD();
                 xSemaphoreTake(model_changed, portMAX_DELAY);
-            }
-            else {
+            } else {
                 PS4.setRumble(0, 0);
             }
 
-            PS4.sendToController();
+            PS4.sendToController(); // !!! Replace !!!
         }
 
-        vTaskDelay(100);
+        vTaskDelay(32);
     }
+}
+
+void JoystickController::updateModel(SemaphoreHandle_t model_changed) {
+    xSemaphoreGive(model_changed);
+    vTaskDelay(100);
+    xSemaphoreTake(model_changed, portMAX_DELAY);
 }
 
 void JoystickController::cleanPairedDevices() {
