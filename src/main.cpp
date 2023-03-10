@@ -10,7 +10,7 @@
 #define CAN_COUNT 1
 #define DELAY 8
 
-mcp2515_can _can_buses[CAN_COUNT] = { mcp2515_can(33) };
+mcp2515_can _can_buses[CAN_COUNT] = { mcp2515_can(4) };
 
 Motor MOTORS[MOTORS_COUNT + 1]{ NULL, Motor(0), Motor(0), Motor(0), Motor(0), Motor(0), Motor(0)};
 
