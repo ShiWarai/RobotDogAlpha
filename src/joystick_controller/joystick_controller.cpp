@@ -66,6 +66,14 @@ void JoystickController::loop()
                 this->updateModel(model_changed);
             }
 
+            if (PS4.Square()) {
+                Model::push_command(Command{ MOTOR_ON, 3, 0 });
+                Model::push_command(Command{ MOTOR_ON, 9, 0 });
+
+                this->updateModel(model_changed);
+                vTaskDelay(500);
+            }
+
             if (setOriginButton.turn(PS4.Options())) {
                 for (short i = 1; i <= MOTORS_COUNT; i++)
                     Model::push_command(Command{ SET_ORIGIN, i, 0 });
