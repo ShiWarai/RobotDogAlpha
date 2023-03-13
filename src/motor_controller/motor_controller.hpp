@@ -20,7 +20,7 @@ public:
   void loop();
 
 private:
-  mcp2515_can can_buses[CAN_COUNT] = { mcp2515_can(33) };
+  mcp2515_can can_buses[CAN_COUNT] = { mcp2515_can(4) };
 
   const int DELAY = 8;
   const int SET_ORIGIN_WAITING = 1500;
