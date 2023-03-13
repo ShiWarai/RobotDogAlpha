@@ -67,6 +67,7 @@ void JoystickController::loop()
             }
 
             if (PS4.Square()) {
+                Model::push_command(Command{ MOTOR_ON, 3, 0 });
                 Model::push_command(Command{ MOTOR_ON, 9, 0 });
 
                 this->updateModel(model_changed);
