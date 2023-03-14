@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <Arduino.h>
+#include "freertos/semphr.h"
 #include "../model/command.hpp"
 #include "../model/model.hpp"
 #include "BluetoothSerial.h"
