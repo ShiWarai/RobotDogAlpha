@@ -53,18 +53,24 @@ private:
 };
 
 
-class BLECustomCharacteristicCallbacks: public BLECharacteristicCallbacks {
-	void onWrite(BLECharacteristic *pCharacteristic) {
+class BLEWriteCharacteristicCallbacks: public BLECharacteristicCallbacks {
+	void onWrite(BLECharacteristic* pCharacteristic) {
 		extern SemaphoreHandle_t model_changed;
 
 		loadModel(pCharacteristic);
 		
-		Serial.println("Changing...");
 		xSemaphoreGive(model_changed);
 		vTaskDelay(100);
 		xSemaphoreTake(model_changed, portMAX_DELAY);
-		Serial.println("Changed");
 
 		uploadModel(pCharacteristic);
+	}
+};
+
+class BLEReadCharacteristicCallbacks: public BLECharacteristicCallbacks {
+	void onRead(BLECharacteristic* pCharacteristic) {
+		Serial.println("test1");
+		vTaskDelay(1000);
+		Serial.println("test2");
 	}
 };

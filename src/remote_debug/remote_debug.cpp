@@ -47,6 +47,7 @@ bool RemoteDebug::begin() {
                                 BLECharacteristic::PROPERTY_READ
                             );
     pMotorsCurrentCharacteristic->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+    pMotorsCurrentCharacteristic->setCallbacks(new BLEReadCharacteristicCallbacks());
     uploadModel(pMotorsCurrentCharacteristic);
 
     pMotorsTargetCharacteristic = pService->createCharacteristic(
@@ -54,7 +55,7 @@ bool RemoteDebug::begin() {
                                         BLECharacteristic::PROPERTY_WRITE
                                     );
     pMotorsTargetCharacteristic->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
-    pMotorsTargetCharacteristic->setCallbacks(new BLECustomCharacteristicCallbacks());
+    pMotorsTargetCharacteristic->setCallbacks(new BLEWriteCharacteristicCallbacks());
 
     pService->start();
     pServer->getAdvertising()->start();
