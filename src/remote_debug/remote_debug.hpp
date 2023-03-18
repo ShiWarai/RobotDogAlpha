@@ -20,7 +20,8 @@ public:
 private:
 	BLEServer *pServer = NULL;
 	BLEService *pService = NULL;
-	BLECharacteristic* pMotorsCharacteristic = NULL;
+	BLECharacteristic* pMotorsCurrentCharacteristic = NULL;
+	BLECharacteristic* pMotorsTargetCharacteristic = NULL;
 
 	bool begin();
 };

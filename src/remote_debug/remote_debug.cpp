@@ -42,14 +42,19 @@ bool RemoteDebug::begin() {
     esp_ble_gap_set_security_param(ESP_BLE_SM_SET_RSP_KEY, &rsp_key, sizeof(uint8_t));
     
     // Create characteristics
-    pMotorsCharacteristic = pService->createCharacteristic(
+    pMotorsCurrentCharacteristic = pService->createCharacteristic(
                                 CHARACTERISTIC_UUID_BEGIN,
-                                BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
+                                BLECharacteristic::PROPERTY_READ
                             );
-    pMotorsCharacteristic->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
-    pMotorsCharacteristic->setCallbacks(new BLECustomCharacteristicCallbacks());
+    pMotorsCurrentCharacteristic->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+    uploadModel(pMotorsCurrentCharacteristic);
 
-    uploadModel(pMotorsCharacteristic);
+    pMotorsTargetCharacteristic = pService->createCharacteristic(
+                                        CHARACTERISTIC_UUID_BEGIN + 1,
+                                        BLECharacteristic::PROPERTY_WRITE
+                                    );
+    pMotorsTargetCharacteristic->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+    pMotorsTargetCharacteristic->setCallbacks(new BLECustomCharacteristicCallbacks());
 
     pService->start();
     pServer->getAdvertising()->start();
