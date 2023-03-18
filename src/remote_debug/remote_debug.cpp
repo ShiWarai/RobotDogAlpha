@@ -5,12 +5,12 @@
 
 void RemoteDebug::loop()
 {
-    BLE bt;
+    this->begin();
 
-    bt.begin();
-
-    while(1)
+    while(1) {
         vTaskDelay(1);
+    }
+        
 }
 
 void convert(float* input, uint8_t* output, size_t size) {
@@ -33,7 +33,7 @@ void convert_inv(uint8_t* input, float* output, size_t size) {
     }
 }
 
-bool BLE::begin() {
+bool RemoteDebug::begin() {
 
     // Create the BLE Device
     BLEDevice::init("RDB-1");
@@ -60,17 +60,25 @@ bool BLE::begin() {
     esp_ble_gap_set_security_param(ESP_BLE_SM_ONLY_ACCEPT_SPECIFIED_SEC_AUTH, &auth_option, sizeof(uint8_t));
     pSecurity->setInitEncryptionKey(ESP_BLE_ENC_KEY_MASK | ESP_BLE_ID_KEY_MASK);
     esp_ble_gap_set_security_param(ESP_BLE_SM_SET_RSP_KEY, &rsp_key, sizeof(uint8_t));
-
-    // Serial.println(CHARACTERISTIC_UUID_BEGIN + 16*m + i);
     
     // Create characteristics
-    BLECharacteristic* pMotorCharacteristic = pService->createCharacteristic(
+    pMotorsCharacteristic = pService->createCharacteristic(
                                 CHARACTERISTIC_UUID_BEGIN,
                                 BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
                             );
-    pMotorCharacteristic->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
-    
-    const size_t vars_count = 60;
+    pMotorsCharacteristic->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+
+    this->uploadModel();
+
+    pService->start();
+    pServer->getAdvertising()->start();
+
+    return true;
+}
+
+void RemoteDebug::uploadModel() {
+    const size_t vars_count = MOTORS_COUNT * 5;
+
     float motors_data[vars_count];
     for(uint8_t m = 1; m <= MOTORS_COUNT; m++) {
         for(uint8_t i = 0; i < 5; i++) {
@@ -97,20 +105,45 @@ bool BLE::begin() {
         }
     }
 
-    uint8_t data[vars_count*4];
-    convert(motors_data, data, vars_count);
+    uint8_t buffer[vars_count*4];
+    convert(motors_data, buffer, vars_count);
     
-    pMotorCharacteristic->setValue(data, sizeof(data));
-    pService->addCharacteristic(pMotorCharacteristic);
+    pMotorsCharacteristic->setValue(buffer, sizeof(buffer));
 
-    pService->start();
-    pServer->getAdvertising()->start();
-
-    return true;
+    return;
 }
 
-void RemoteDebug::updateModel(SemaphoreHandle_t model_changed) {
-    xSemaphoreGive(model_changed);
-    vTaskDelay(100);
-    xSemaphoreTake(model_changed, portMAX_DELAY);
+void RemoteDebug::loadModel()
+{
+    const size_t vars_count = MOTORS_COUNT * 5;
+    float motors_data[vars_count];
+
+    convert_inv(pMotorsCharacteristic->getData(), motors_data, vars_count);
+
+    for(uint8_t m = 1; m <= MOTORS_COUNT; m++) {
+        for(uint8_t i = 0; i < 5; i++) {
+            switch (i)
+            {
+            case 0:
+                Model::motors[m].t_pos = motors_data[(m-1)*5 + i];
+                break;
+            case 1:
+                Model::motors[m].kp = motors_data[(m-1)*5 + i];
+                break;
+            case 2:
+                Model::motors[m].t_vel = motors_data[(m-1)*5 + i];
+                break;
+            case 3:
+                Model::motors[m].kd = motors_data[(m-1)*5 + i];
+                break;
+            case 4:
+                Model::motors[m].t_trq = motors_data[(m-1)*5 + i];
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    return;
 }

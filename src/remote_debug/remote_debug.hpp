@@ -16,10 +16,16 @@ class RemoteDebug
 public:
 	RemoteDebug(){};
 	void loop();
-
 private:
+	BLEServer *pServer = NULL;
+	BLEService *pService = NULL;
+	BLECharacteristic* pMotorsCharacteristic = NULL;
+
+	bool begin();
+
 	// Misc
-	void updateModel(SemaphoreHandle_t model_changed);
+	void uploadModel();
+	void loadModel();
 };
 
 
@@ -46,13 +52,4 @@ private:
 		// Serial.println("Disconnect");
 		return;
 	}
-};
-
-class BLE
-{
-public:
-	bool begin();
-private:
-	BLEServer *pServer = NULL;
-	BLEService *pService = NULL;
 };
