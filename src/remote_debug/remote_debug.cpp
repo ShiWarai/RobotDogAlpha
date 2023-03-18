@@ -16,7 +16,7 @@ void RemoteDebug::loop()
 bool RemoteDebug::begin() {
 
     // Create the BLE Device
-    BLEDevice::init("RDB-1");
+    BLEDevice::init("RDB-1-test");
     BLEDevice::setEncryptionLevel(ESP_BLE_SEC_ENCRYPT);
 
     // Create the BLE Server
