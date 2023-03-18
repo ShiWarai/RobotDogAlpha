@@ -13,6 +13,26 @@ void RemoteDebug::loop()
         vTaskDelay(1);
 }
 
+void convert(float* input, uint8_t* output, size_t size) {
+    // Предполагаем, что размер output равен 4 * size
+    for (size_t i = 0; i < size; i++) {
+        // Преобразуем указатель на float в указатель на uint8_t
+        uint8_t* bytes = reinterpret_cast<uint8_t*>(&input[i]);
+        // Копируем 4 байта из bytes в output
+        memcpy(&output[4 * i], bytes, 4);
+    }
+}
+
+void convert_inv(uint8_t* input, float* output, size_t size) {
+    // Предполагаем, что размер input равен 4 * size
+    for (size_t i = 0; i < size; i++) {
+        // Преобразуем указатель на uint8_t в указатель на float
+        float* value = reinterpret_cast<float*>(&input[4 * i]);
+        // Копируем значение из value в output
+        output[i] = *value;
+    }
+}
+
 bool BLE::begin() {
 
     // Create the BLE Device
@@ -25,7 +45,7 @@ bool BLE::begin() {
     pServer->setCallbacks(callbacks);
 
     // Create the BLE Service
-    pService = pServer->createService(BLEUUID(SERVICE_UUID), 1+60*2);
+    pService = pServer->createService(BLEUUID(SERVICE_UUID), 1+4*2);
 
     // Security
     BLESecurity *pSecurity = new BLESecurity();
@@ -41,44 +61,47 @@ bool BLE::begin() {
     pSecurity->setInitEncryptionKey(ESP_BLE_ENC_KEY_MASK | ESP_BLE_ID_KEY_MASK);
     esp_ble_gap_set_security_param(ESP_BLE_SM_SET_RSP_KEY, &rsp_key, sizeof(uint8_t));
 
-    float default_value = 0.0;
-    for(int m = 1; m <= 12; m++) {
-        for(int i=0; i < 5; i++) {
-            
-            // Serial.println(CHARACTERISTIC_UUID_BEGIN + 16*m + i);
-            
-            // Create characteristics
-            BLECharacteristic* pMotorCharacteristic = pService->createCharacteristic(
-                                        CHARACTERISTIC_UUID_BEGIN + 16*m + i,
-                                        BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
-                                    );
-            pMotorCharacteristic->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
-
+    // Serial.println(CHARACTERISTIC_UUID_BEGIN + 16*m + i);
+    
+    // Create characteristics
+    BLECharacteristic* pMotorCharacteristic = pService->createCharacteristic(
+                                CHARACTERISTIC_UUID_BEGIN,
+                                BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
+                            );
+    pMotorCharacteristic->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+    
+    const size_t vars_count = 60;
+    float motors_data[vars_count];
+    for(uint8_t m = 1; m <= MOTORS_COUNT; m++) {
+        for(uint8_t i = 0; i < 5; i++) {
             switch (i)
             {
-                case 0:
-                    default_value = Model::motors[m].c_pos;
-                    break;
-                case 1:
-                    default_value = Model::motors[m].kp;
-                    break;
-                case 2:
-                    default_value = Model::motors[m].c_vel;
-                    break;
-                case 3:
-                    default_value = Model::motors[m].kd;
-                    break;
-                case 4:
-                    default_value = Model::motors[m].c_trq;
-                    break;
-                default:
-                    break;
+            case 0:
+                motors_data[(m-1)*5 + i] = Model::motors[m].c_pos;
+                break;
+            case 1:
+                motors_data[(m-1)*5 + i] = Model::motors[m].kp;
+                break;
+            case 2:
+                motors_data[(m-1)*5 + i] = Model::motors[m].c_vel;
+                break;
+            case 3:
+                motors_data[(m-1)*5 + i] = Model::motors[m].kd;
+                break;
+            case 4:
+                motors_data[(m-1)*5 + i] = Model::motors[m].c_trq;
+                break;
+            default:
+                break;
             }
-            
-            pMotorCharacteristic->setValue(default_value);
-            pService->addCharacteristic(pMotorCharacteristic);
         }
     }
+
+    uint8_t data[vars_count*4];
+    convert(motors_data, data, vars_count);
+    
+    pMotorCharacteristic->setValue(data, sizeof(data));
+    pService->addCharacteristic(pMotorCharacteristic);
 
     pService->start();
     pServer->getAdvertising()->start();
