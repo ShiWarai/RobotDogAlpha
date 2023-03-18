@@ -59,14 +59,10 @@ class BLECustomCharacteristicCallbacks: public BLECharacteristicCallbacks {
 
 		loadModel(pCharacteristic);
 		
-		Serial.println(Model::motors[1].get_stats());
-		Serial.println(Model::motors[1].t_pos);
 		Serial.println("Changing...");
 		xSemaphoreGive(model_changed);
 		vTaskDelay(100);
 		xSemaphoreTake(model_changed, portMAX_DELAY);
-		Serial.println(Model::motors[1].get_stats());
-		Serial.println(Model::motors[1].t_pos);
 		Serial.println("Changed");
 
 		uploadModel(pCharacteristic);
