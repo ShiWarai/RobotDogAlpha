@@ -69,8 +69,15 @@ class BLEWriteCharacteristicCallbacks: public BLECharacteristicCallbacks {
 
 class BLEReadCharacteristicCallbacks: public BLECharacteristicCallbacks {
 	void onRead(BLECharacteristic* pCharacteristic) {
-		Serial.println("test1");
-		vTaskDelay(1000);
-		Serial.println("test2");
+		extern SemaphoreHandle_t model_changed;
+		
+		// Test
+		Model::push_command(Command{CHECK, 1, 0});
+
+		xSemaphoreGive(model_changed);
+		vTaskDelay(100);
+		xSemaphoreTake(model_changed, portMAX_DELAY);
+
+		uploadModel(pCharacteristic);
 	}
 };
