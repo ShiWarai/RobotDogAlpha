@@ -58,9 +58,13 @@ class BLECustomCharacteristicCallbacks: public BLECharacteristicCallbacks {
 		extern SemaphoreHandle_t model_changed;
 
 		loadModel(pCharacteristic);
-
+		
+		Serial.println("Changing...");
 		xSemaphoreGive(model_changed);
 		taskYIELD();
 		xSemaphoreTake(model_changed, portMAX_DELAY);
+		Serial.println("Changed");
+
+		uploadModel(pCharacteristic);
 	}
 };
