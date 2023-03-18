@@ -60,8 +60,8 @@ class BLEWriteCharacteristicCallbacks: public BLECharacteristicCallbacks {
 		loadModel(pCharacteristic);
 		
 		xSemaphoreGive(model_changed);
-		while(xSemaphoreTake(model_changed, portMAX_DELAY));
-			break;
+		vTaskDelay(100);
+		xSemaphoreTake(model_changed, portMAX_DELAY);
 
 		uploadModel(pCharacteristic);
 	}
@@ -75,8 +75,8 @@ class BLEReadCharacteristicCallbacks: public BLECharacteristicCallbacks {
 		Model::push_command(Command{CHECK, 1, 0});
 
 		xSemaphoreGive(model_changed);
-		while(xSemaphoreTake(model_changed, portMAX_DELAY));
-			break;
+		vTaskDelay(100);
+		xSemaphoreTake(model_changed, portMAX_DELAY);
 
 		uploadModel(pCharacteristic);
 	}
