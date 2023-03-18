@@ -28,8 +28,10 @@ void MotorController::loop()
                     continue;
 
                 if(id != 0) {
+                    Serial.println("test1");
+
 					if (Model::motors[id].can_id != -1)
-                            control_motor(&can_buses[Model::motors[id].can_id], id, &Model::motors[id]);
+                        control_motor(&can_buses[Model::motors[id].can_id], id, &Model::motors[id]);
                     continue;
                 }
                 else {
@@ -209,7 +211,8 @@ void MotorController::_check_motor(mcp2515_can *can, unsigned long id,
 
 void MotorController::control_motor(mcp2515_can *can, unsigned long id, Motor *motor)
 {
-  can_pack(can, id, motor->t_pos, motor->kp, motor->t_vel, motor->kd, motor->t_trq); // Undone
+    Serial.println(motor->t_pos);
+    can_pack(can, id, motor->t_pos, motor->kp, motor->t_vel, motor->kd, motor->t_trq); // Undone
 	vTaskDelay(DELAY);
 	can_unpack(can, id, &motor->c_pos, &motor->c_vel, &motor->c_trq);
 	vTaskDelay(DELAY);
