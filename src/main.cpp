@@ -46,7 +46,7 @@ void setup()
 	delay(5);
 	//xTaskCreate(task_joystick_controller, "Joystick controller", 10240, NULL, 1, NULL);
 	//delay(5);
-	xTaskCreate(task_remote_debug, "Remote debug", 10240, NULL, 1, NULL);
+	xTaskCreate(task_remote_debug, "Remote debug", 4096, NULL, 1, NULL);
 	delay(5);
 	xTaskCreate(task_motor_controller, "Motor controller", 4096, NULL, 1, NULL);
 	delay(5);

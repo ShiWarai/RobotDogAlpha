@@ -5,6 +5,7 @@
 #include "freertos/semphr.h"
 #include "../model/command.hpp"
 #include "../model/model.hpp"
+#include "misc.hpp"
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
@@ -22,10 +23,6 @@ private:
 	BLECharacteristic* pMotorsCharacteristic = NULL;
 
 	bool begin();
-
-	// Misc
-	void uploadModel();
-	void loadModel();
 };
 
 
@@ -51,5 +48,18 @@ private:
 		this->advertising->start();
 		// Serial.println("Disconnect");
 		return;
+	}
+};
+
+
+class BLECustomCharacteristicCallbacks: public BLECharacteristicCallbacks {
+	void onWrite(BLECharacteristic *pCharacteristic) {
+		extern SemaphoreHandle_t model_changed;
+
+		loadModel(pCharacteristic);
+
+		xSemaphoreGive(model_changed);
+		taskYIELD();
+		xSemaphoreTake(model_changed, portMAX_DELAY);
 	}
 };
