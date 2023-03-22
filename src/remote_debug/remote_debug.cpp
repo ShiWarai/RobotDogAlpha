@@ -1,5 +1,6 @@
 #include "remote_debug.hpp"
 
+#define BLE_NAME                       "RDB-1-test"
 #define SERVICE_UUID                   "e7112e6c-c396-11ed-afa1-0242ac120002"
 #define CHARACTERISTIC_UUID_BEGIN      0xffffff00
 
@@ -16,7 +17,7 @@ void RemoteDebug::loop()
 bool RemoteDebug::begin() {
 
     // Create the BLE Device
-    BLEDevice::init("RDB-1");
+    BLEDevice::init(BLE_NAME);
     BLEDevice::setEncryptionLevel(ESP_BLE_SEC_ENCRYPT);
 
     // Create the BLE Server
