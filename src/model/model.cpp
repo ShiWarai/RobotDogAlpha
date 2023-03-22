@@ -4,17 +4,17 @@ bool Model::init() {
     //Serial.println("Start init...");
 
     Model::motors[1] = Motor(0);
-    Model::motors[2] = Motor();
-    Model::motors[3] = Motor();
-    Model::motors[4] = Motor();
-    Model::motors[5] = Motor();
-    Model::motors[6] = Motor();
-    Model::motors[7] = Motor();
-    Model::motors[8] = Motor();
-    Model::motors[9] = Motor();
-    Model::motors[10] = Motor();
-    Model::motors[11] = Motor();
-    Model::motors[12] = Motor();
+    Model::motors[2] = Motor(0);
+    Model::motors[3] = Motor(0);
+    Model::motors[4] = Motor(0);
+    Model::motors[5] = Motor(0);
+    Model::motors[6] = Motor(0);
+    Model::motors[7] = Motor(0);
+    Model::motors[8] = Motor(0);
+    Model::motors[9] = Motor(0);
+    Model::motors[10] = Motor(0);
+    Model::motors[11] = Motor(0);
+    Model::motors[12] = Motor(0);
 
     // Front left leg
     Model::motors[1].min_pos = 0.0 + 0.3;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include "../model/command.hpp"
 #include "../model/model.hpp"
 #include <BLEDevice.h>
@@ -8,5 +9,7 @@
 #include <BLE2902.h>
 
 // Misc
-void uploadModel(BLECharacteristic* pMotorsCharacteristic);
-void loadModel(BLECharacteristic* pMotorsCharacteristic);
+void uploadMotorsModel(BLECharacteristic* motorsCharacteristic);
+void loadMotorsModel(BLECharacteristic* motorsCharacteristic);
+void uploadMotorsOn(BLECharacteristic* characteristic);
+void loadMotorsOn(BLECharacteristic* characteristic);

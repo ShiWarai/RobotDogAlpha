@@ -1,6 +1,9 @@
 #include "misc.hpp"
+const size_t motorsModelVars = MOTORS_COUNT * 5;
+const size_t motorsOnBufferSize = 2;
 
-void convert(float* input, uint8_t* output, size_t size) {
+void convertFloatArrayToUint8Array(float* input, uint8_t* output, size_t size) 
+{
     // Предполагаем, что размер output равен 4 * size
     for (size_t i = 0; i < size; i++) {
         // Преобразуем указатель на float в указатель на uint8_t
@@ -10,7 +13,8 @@ void convert(float* input, uint8_t* output, size_t size) {
     }
 }
 
-void convert_inv(uint8_t* input, float* output, size_t size) {
+void convertUint8ArrayToFloatArray(uint8_t* input, float* output, size_t size) 
+{
     // Предполагаем, что размер input равен 4 * size
     for (size_t i = 0; i < size; i++) {
         // Преобразуем указатель на uint8_t в указатель на float
@@ -20,10 +24,53 @@ void convert_inv(uint8_t* input, float* output, size_t size) {
     }
 }
 
-void uploadModel(BLECharacteristic* pMotorsCharacteristic) {
-    const size_t vars_count = MOTORS_COUNT * 5;
+void convertBoolArrayToUint8Array(bool* boolArray, size_t boolArraySize, uint8_t* uint8_tArray, size_t uint8_tArraySize) {
+    uint8_t uint8_tValue = 0;
+    int bitPosition = 0;
+    for (size_t i = 0; i < boolArraySize; i++) {
+        uint8_tValue |= (boolArray[i] << bitPosition);
+        bitPosition++;
+        if (bitPosition == 8) {
+            if (i / 8 < uint8_tArraySize) {
+                uint8_tArray[i / 8] = uint8_tValue;
+            }
+            uint8_tValue = 0;
+            bitPosition = 0;
+        }
+    }
 
-    float motors_data[vars_count];
+    if (bitPosition > 0 && boolArraySize / 8 < uint8_tArraySize) {
+        uint8_tArray[boolArraySize / 8] = uint8_tValue;
+    }
+}
+
+void convertUint8ArrayToBoolArray(uint8_t *uint8_tArray, size_t uint8_tArraySize, bool *boolArray, size_t boolArraySize)
+{
+    uint8_t uint8_tValue;
+    int bitPosition = 0;
+    for (size_t i = 0; i < boolArraySize; i++)
+    {
+        if (i / 8 < uint8_tArraySize)
+        {
+            uint8_tValue = uint8_tArray[i / 8];
+            boolArray[i] = (uint8_tValue >> bitPosition) & 1;
+        }
+        else
+        {
+            boolArray[i] = false;
+        }
+        bitPosition++;
+
+        if (bitPosition == 8)
+        {
+            bitPosition = 0;
+        }
+    }
+}
+
+void uploadMotorsModel(BLECharacteristic* characteristic) 
+{
+    float motors_data[motorsModelVars];
     for(uint8_t m = 1; m <= MOTORS_COUNT; m++) {
         for(uint8_t i = 0; i < 5; i++) {
             switch (i)
@@ -49,20 +96,19 @@ void uploadModel(BLECharacteristic* pMotorsCharacteristic) {
         }
     }
 
-    uint8_t buffer[vars_count*4];
-    convert(motors_data, buffer, vars_count);
+    uint8_t buffer[motorsModelVars*4];
+    convertFloatArrayToUint8Array(motors_data, buffer, motorsModelVars);
     
-    pMotorsCharacteristic->setValue(buffer, sizeof(buffer));
+    characteristic->setValue(buffer, sizeof(buffer));
 
     return;
 }
 
-void loadModel(BLECharacteristic* pMotorsCharacteristic)
+void loadMotorsModel(BLECharacteristic* characteristic)
 {
-    const size_t vars_count = MOTORS_COUNT * 5;
-    float motors_data[vars_count];
+    float motors_data[motorsModelVars];
 
-    convert_inv(pMotorsCharacteristic->getData(), motors_data, vars_count);
+    convertUint8ArrayToFloatArray(characteristic->getData(), motors_data, motorsModelVars);
 
     for(uint8_t m = 1; m <= MOTORS_COUNT; m++) {
         for(uint8_t i = 0; i < 5; i++) {
@@ -91,5 +137,38 @@ void loadModel(BLECharacteristic* pMotorsCharacteristic)
         Model::need_update[m] = true; // need optimize
     }
 
+    return;
+}
+
+void uploadMotorsOn(BLECharacteristic *characteristic)
+{
+    bool motorsOnStates[MOTORS_COUNT];
+
+    for(uint8_t m = 1; m <= MOTORS_COUNT; m++) {
+        motorsOnStates[m-1] = Model::motors[m].turn_on;
+    }
+
+    uint8_t buffer[motorsOnBufferSize];
+    convertBoolArrayToUint8Array(motorsOnStates, MOTORS_COUNT, buffer, motorsOnBufferSize);
+
+    characteristic->setValue(buffer, motorsOnBufferSize);
+
+    return;
+}
+
+void loadMotorsOn(BLECharacteristic *characteristic)
+{
+    bool motorsOnStates[MOTORS_COUNT];
+
+    convertUint8ArrayToBoolArray(characteristic->getData(), 2, motorsOnStates, MOTORS_COUNT);
+    
+    for(uint8_t m = 1; m <= MOTORS_COUNT; m++) {
+        if(motorsOnStates[m-1] && !Model::motors[m].turn_on) {
+            Model::push_command(Command{ MOTOR_ON, m, 0 });
+        } else if (!motorsOnStates[m-1] && Model::motors[m].turn_on) {
+            Model::push_command(Command{ MOTOR_OFF, m, 0 });
+        }
+    }
+    
     return;
 }
