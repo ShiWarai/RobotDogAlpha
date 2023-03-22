@@ -37,17 +37,32 @@ class BLEMotorOnCharacteristicCallbacks : public BLECharacteristicCallbacks
     void onRead(BLECharacteristic *pCharacteristic)
     {
         uploadMotorsOn(pCharacteristic);
+
+        return;
     }
 
     void onWrite(BLECharacteristic *pCharacteristic)
     {
         extern SemaphoreHandle_t model_changed;
 
+        for(uint8_t m = 1; m <= MOTORS_COUNT; m++) {
+            if(!Model::motors[m].set_origin) {
+                if(Model::motors[m].turn_on) {
+                    Serial.println("You should turn off drivers!");
+                    return;
+                }
+
+                Model::push_command(Command{ SET_ORIGIN, m, 0 });
+            }
+        }
+
         loadMotorsOn(pCharacteristic);
 
         xSemaphoreGive(model_changed);
         vTaskDelay(32);
         xSemaphoreTake(model_changed, portMAX_DELAY);
+
+        return;
     }
 };
 
@@ -57,14 +72,16 @@ class BLEReadMotorsCharacteristicCallbacks : public BLECharacteristicCallbacks
     {
         extern SemaphoreHandle_t model_changed;
 
-        // Test
-        Model::push_command(Command{CHECK, 1, 0});
+        for(uint8_t m = 1; m <= MOTORS_COUNT; m++)
+            Model::push_command(Command{CHECK, m, 0});
 
         xSemaphoreGive(model_changed);
         vTaskDelay(32);
         xSemaphoreTake(model_changed, portMAX_DELAY);
 
         uploadMotorsModel(pCharacteristic);
+
+        return;
     }
 };
 
@@ -81,5 +98,7 @@ class BLEWriteMotorsCharacteristicCallbacks : public BLECharacteristicCallbacks
         xSemaphoreTake(model_changed, portMAX_DELAY);
 
         uploadMotorsModel(pCharacteristic);
+
+        return;
     }
 };

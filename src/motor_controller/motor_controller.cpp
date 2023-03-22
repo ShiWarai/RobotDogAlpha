@@ -84,6 +84,8 @@ void MotorController::loop()
                                 Serial.println("Motor zero");
                                 _zero_motor(&can_buses[Model::motors[t_id].can_id], t_id, 
                                             &Model::motors[t_id].c_pos, &Model::motors[t_id].c_vel, &Model::motors[t_id].c_trq);
+
+                                Model::motors[t_id].set_origin = true;
                                 break;
 
                             case CommandType::CHECK:
