@@ -1,103 +1,72 @@
 #include "remote_debug.hpp"
 
+#define BLE_NAME                       "RDB-1-test"
+#define SERVICE_UUID                   "e7112e6c-c396-11ed-afa1-0242ac120002"
+#define CHARACTERISTIC_UUID_BEGIN      0xffffff00
+
 void RemoteDebug::loop()
 {
-    extern SemaphoreHandle_t model_changed;
+    this->begin();
 
-    BluetoothSerial* serial_bt = new BluetoothSerial();
-    serial_bt->begin("ESP32 OTA Updates");
-
-    Serial.println("🔁 Remote debug begin");
-
-    String input;
-    while (1) {
-
-        if (serial_bt->available()) { // Если есть данные от Bluetooth
-            input = serial_bt->readString(); // Считываем строку
-            if (input == PIN_CODE) {
-                serial_bt->println("Success"); // Отправляем сообщение об успехе
-                trust_loop(serial_bt);
-            }
-            else { // Иначе
-                serial_bt->println("Wrong pin-code"); // Отправляем сообщение об ошибке
-                serial_bt->disconnect();
-                continue;
-            }
-        }
-        else { // Если нет данных от Bluetooth
-            serial_bt->println("Write pin-code"); // Отправляем запрос на ввод пин-кода
-            vTaskDelay(1000);
-        }
-
+    while(1) {
         vTaskDelay(1);
     }
-
-    delete serial_bt;
+        
 }
 
-void RemoteDebug::updateModel(SemaphoreHandle_t model_changed) {
-    xSemaphoreGive(model_changed);
-    vTaskDelay(100);
-    xSemaphoreTake(model_changed, portMAX_DELAY);
-}
+bool RemoteDebug::begin() {
 
-void RemoteDebug::trust_loop(BluetoothSerial* serial_bt)
-{
-    extern SemaphoreHandle_t model_changed;
+    // Create the BLE Device
+    BLEDevice::init(BLE_NAME);
+    BLEDevice::setEncryptionLevel(ESP_BLE_SEC_ENCRYPT);
 
-    float data[12][3] = {
-        {1.1, 2.2, 3.3},
-        {4.4, 5.5, 6.6},
-        {7.7, 8.8, 9.9},
-        {10.1, 11.2, 12.3},
-        {13.4, 14.5 ,15.6},
-        {16.7 ,17.8 ,18.9},
-        {19.,20.,21,},
-        {22.,23.,24,},
-        {25.,26.,27,},
-        {28.,29.,30,},
-    };
+    // Create the BLE Server
+    pServer = BLEDevice::createServer();
+    BLECustomServerCallbacks* callbacks = new BLECustomServerCallbacks(pServer->getAdvertising());
+    pServer->setCallbacks(callbacks);
 
-    float pos1, pos2, pos3;
-    float p_pos1, p_pos2, p_pos3;
-    float n_pos1, n_pos2, n_pos3;
+    // Create the BLE Service
+    pService = pServer->createService(BLEUUID(SERVICE_UUID), 1+3*2);
 
-    String buf;
-    while(1) {
-        if (serial_bt->available()) {
-            buf = serial_bt->readString();
+    // Security
+    BLESecurity *pSecurity = new BLESecurity();
+    uint8_t rsp_key = ESP_BLE_ENC_KEY_MASK | ESP_BLE_ID_KEY_MASK;
+    uint8_t auth_option = ESP_BLE_ONLY_ACCEPT_SPECIFIED_AUTH_DISABLE;
 
-            switch (buf[0])
-            {
-            case '0':
-            {
-                serial_bt->println(data[0][2]);
-                break;
-            }
-            case 'a':
-            {
-                short id = (buf[1] - 48) * 10 + (buf[2] - 48);
+    uint32_t passkey = 2284;
+    esp_ble_gap_set_security_param(ESP_BLE_SM_SET_STATIC_PASSKEY, &passkey, sizeof(uint32_t));
+    pSecurity->setAuthenticationMode(ESP_LE_AUTH_REQ_SC_MITM_BOND);
+    pSecurity->setCapability(ESP_IO_CAP_OUT);
+    pSecurity->setKeySize(16);
+    esp_ble_gap_set_security_param(ESP_BLE_SM_ONLY_ACCEPT_SPECIFIED_SEC_AUTH, &auth_option, sizeof(uint8_t));
+    pSecurity->setInitEncryptionKey(ESP_BLE_ENC_KEY_MASK | ESP_BLE_ID_KEY_MASK);
+    esp_ble_gap_set_security_param(ESP_BLE_SM_SET_RSP_KEY, &rsp_key, sizeof(uint8_t));
+    
+    // Create characteristics
+    pMotorsOnCharacterestic = pService->createCharacteristic(
+                                CHARACTERISTIC_UUID_BEGIN,
+                                BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
+                            );
+    pMotorsOnCharacterestic->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+    pMotorsOnCharacterestic->setCallbacks(new BLEMotorOnCharacteristicCallbacks());
 
-                if (id <= 0 || id > MOTORS_COUNT)
-                {
-                    serial_bt->println("Wrong id!");
-                    break;
-                }
+    pMotorsCurrentCharacteristic = pService->createCharacteristic(
+                                CHARACTERISTIC_UUID_BEGIN + 1,
+                                BLECharacteristic::PROPERTY_READ
+                            );
+    pMotorsCurrentCharacteristic->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+    pMotorsCurrentCharacteristic->setCallbacks(new BLEReadMotorsCharacteristicCallbacks());
+    uploadMotorsModel(pMotorsCurrentCharacteristic);
 
-                Model::push_command(Command{ MOTOR_ON, id, 0 });
-                serial_bt->print("Motor on: "); serial_bt->println(id);
-                break;
-            }
-            default:
-                break;
-            }
+    pMotorsTargetCharacteristic = pService->createCharacteristic(
+                                        CHARACTERISTIC_UUID_BEGIN + 2,
+                                        BLECharacteristic::PROPERTY_WRITE
+                                    );
+    pMotorsTargetCharacteristic->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+    pMotorsTargetCharacteristic->setCallbacks(new BLEWriteMotorsCharacteristicCallbacks());
 
-            xSemaphoreGive(model_changed);
-            vTaskDelay(100);
-            xSemaphoreTake(model_changed, portMAX_DELAY);
-        }
-    }
+    pService->start();
+    pServer->getAdvertising()->start();
 
-
-    serial_bt->disconnect();    
+    return true;
 }

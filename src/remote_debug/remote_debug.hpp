@@ -5,19 +5,24 @@
 #include "freertos/semphr.h"
 #include "../model/command.hpp"
 #include "../model/model.hpp"
-#include "BluetoothSerial.h"
-
-#define PIN_CODE "2284"
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
+#include "esp_ota_ops.h"
+#include "callbacks.hpp"
 
 class RemoteDebug
 {
 public:
-    RemoteDebug() {};
-    void loop();
+	RemoteDebug(){};
+	void loop();
 private:
-    // Misc
-    void updateModel(SemaphoreHandle_t model_changed);
+	BLEServer* pServer = NULL;
+	BLEService* pService = NULL;
+	BLECharacteristic* pMotorsOnCharacterestic = NULL;
+	BLECharacteristic* pMotorsCurrentCharacteristic = NULL;
+	BLECharacteristic* pMotorsTargetCharacteristic = NULL;
 
-    // Bluetooth
-    void trust_loop(BluetoothSerial* serial_bt);
+	bool begin();
 };
