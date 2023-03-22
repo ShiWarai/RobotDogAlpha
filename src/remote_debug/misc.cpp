@@ -124,7 +124,7 @@ void loadMotorsModel(BLECharacteristic* characteristic)
                 // Model::motors[m].t_vel = motors_data[(m-1)*5 + i];
                 break;
             case 3:
-                // Model::motors[m].kd = motors_data[(m-1)*5 + i];
+                Model::motors[m].kd = motors_data[(m-1)*5 + i];
                 break;
             case 4:
                 // Model::motors[m].t_trq = motors_data[(m-1)*5 + i];
