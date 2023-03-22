@@ -53,14 +53,31 @@ private:
 };
 
 
-class BLECustomCharacteristicCallbacks: public BLECharacteristicCallbacks {
-	void onWrite(BLECharacteristic *pCharacteristic) {
+class BLEWriteCharacteristicCallbacks: public BLECharacteristicCallbacks {
+	void onWrite(BLECharacteristic* pCharacteristic) {
 		extern SemaphoreHandle_t model_changed;
 
 		loadModel(pCharacteristic);
+		
+		xSemaphoreGive(model_changed);
+		vTaskDelay(32);
+		xSemaphoreTake(model_changed, portMAX_DELAY);
+
+		uploadModel(pCharacteristic);
+	}
+};
+
+class BLEReadCharacteristicCallbacks: public BLECharacteristicCallbacks {
+	void onRead(BLECharacteristic* pCharacteristic) {
+		extern SemaphoreHandle_t model_changed;
+		
+		// Test
+		Model::push_command(Command{CHECK, 1, 0});
 
 		xSemaphoreGive(model_changed);
-		taskYIELD();
+		vTaskDelay(32);
 		xSemaphoreTake(model_changed, portMAX_DELAY);
+
+		uploadModel(pCharacteristic);
 	}
 };

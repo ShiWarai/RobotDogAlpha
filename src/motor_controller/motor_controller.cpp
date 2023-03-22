@@ -12,11 +12,11 @@ void MotorController::loop()
     unsigned long c_id;
     float c_pos, c_vel, c_trq;
 
-    // for (int i = 0; i < CAN_COUNT; i++)
-    // {
-    //     while (can_buses[i].begin(CAN_1000KBPS, MCP_8MHz) != CAN_OK)
-    //         vTaskDelay(100);
-    // }
+    for (int i = 0; i < CAN_COUNT; i++)
+    {
+        while (can_buses[i].begin(CAN_1000KBPS, MCP_8MHz) != CAN_OK)
+            vTaskDelay(100);
+    }
 
     Serial.println("🔁 Motor controller begin");
     while (1)
@@ -201,7 +201,7 @@ void MotorController::_zero_motor(mcp2515_can *can, unsigned long id,           
 void MotorController::_check_motor(mcp2515_can *can, unsigned long id,
                                    float *c_pos, float *c_vel, float *c_trq)
 {
-  can_pack(can, id, 0, 0);
+  can->sendMsgBuf(id, 0, 8, START_MOTOR);
   vTaskDelay(DELAY);
   can_unpack(can, id, c_pos, c_vel, c_trq);
   vTaskDelay(DELAY);
@@ -209,7 +209,7 @@ void MotorController::_check_motor(mcp2515_can *can, unsigned long id,
 
 void MotorController::control_motor(mcp2515_can *can, unsigned long id, Motor *motor)
 {
-  	can_pack(can, id, motor->t_pos, motor->kp, motor->t_vel, motor->kd, motor->t_trq); // Undone
+  can_pack(can, id, motor->t_pos, motor->kp, motor->t_vel, motor->kd, motor->t_trq); // Undone
 	vTaskDelay(DELAY);
 	can_unpack(can, id, &motor->c_pos, &motor->c_vel, &motor->c_trq);
 	vTaskDelay(DELAY);
