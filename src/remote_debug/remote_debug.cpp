@@ -1,6 +1,6 @@
 #include "remote_debug.hpp"
 
-#define BLE_NAME                       "RDB-1-test"
+#define BLE_NAME                       "RDB-1"
 #define SERVICE_UUID                   "e7112e6c-c396-11ed-afa1-0242ac120002"
 #define CHARACTERISTIC_UUID_BEGIN      0xffffff00
 
