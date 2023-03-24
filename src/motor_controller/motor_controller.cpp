@@ -205,7 +205,7 @@ void MotorController::_check_motor(mcp2515_can *can, unsigned long id,
                                    float *c_pos, float *c_vel, float *c_trq)
 {
   can->sendMsgBuf(id, 0, 8, START_MOTOR);
-  vTaskDelay(DELAY);
+  vTaskDelay(CHECK_WAITING);
   can_unpack(can, id, c_pos, c_vel, c_trq);
   vTaskDelay(DELAY);
 }
