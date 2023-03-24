@@ -93,7 +93,7 @@ void MotorController::loop()
                                 Serial.println(t_id);
 
                                 if(Model::motors[t_id].turn_on)
-                                  control_motor(&can_buses[Model::motors[id].can_id], id, &Model::motors[id]);
+                                  control_motor(&can_buses[Model::motors[t_id].can_id], t_id, &Model::motors[t_id]);
                                   //_check_motor(&can_buses[Model::motors[t_id].can_id], t_id, &Model::motors[t_id].c_pos, &Model::motors[t_id].c_vel, &Model::motors[t_id].c_trq);
 
                                 Serial.print("Pos: ");
