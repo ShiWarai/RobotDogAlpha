@@ -19,7 +19,7 @@ bool Model::init() {
     // Front left leg
     Model::motors[1].min_pos = 0.0 + 0.3;
     Model::motors[1].max_pos = 0.73 + 0.2;
-    Model::motors[1].kp = 3;
+    Model::motors[1].kp = 6;
     Model::motors[2].min_pos = -1.0;
     Model::motors[2].max_pos = 1.0;
     Model::motors[2].kp = 5;
