@@ -208,9 +208,15 @@ void MotorController::_check_motor(mcp2515_can *can, unsigned long id,
 
 void MotorController::control_motor(mcp2515_can *can, unsigned long id, Motor *motor)
 {
-  can_pack(can, id, motor->t_pos, motor->kp, motor->t_vel, motor->kd, motor->t_trq); // Undone
-	vTaskDelay(DELAY);
-	can_unpack(can, id, &motor->c_pos, &motor->c_vel, &motor->c_trq);
+  if(motor->t_pos >= motor->min_pos && motor->t_pos <= motor->max_pos)
+  {
+    if(motor->t_vel == 0 && motor->t_trq == 0) 
+    {
+      can_pack(can, id, motor->t_pos, motor->kp, motor->t_vel, motor->kd, motor->t_trq); // Undone
+	    vTaskDelay(DELAY);
+	    can_unpack(can, id, &motor->c_pos, &motor->c_vel, &motor->c_trq);
+    }
+  }
 }
 
 void MotorController::_control_motor(mcp2515_can *can, unsigned long id,
