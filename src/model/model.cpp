@@ -50,7 +50,7 @@ bool Model::init() {
     Model::motors[9].kp = 2;
 
     // Back right leg
-    Model::motors[10].min_pos = 0.5;
+    Model::motors[10].min_pos = -0.5;
     Model::motors[10].max_pos = 2;
     Model::motors[10].kp = 6;
     Model::motors[11].min_pos = -2;

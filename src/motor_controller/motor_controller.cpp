@@ -217,7 +217,7 @@ void MotorController::control_motor(mcp2515_can *can, unsigned long id, Motor *m
 	    can_unpack(can, id, &motor->c_pos, &motor->c_vel, &motor->c_trq);
     }
   } else {
-    Serial.println("Wrong position!");
+    Serial.printf("Wrong position for motor: %d\r\n", motor->id);
   }
 }
 
