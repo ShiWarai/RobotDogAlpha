@@ -216,6 +216,8 @@ void MotorController::control_motor(mcp2515_can *can, unsigned long id, Motor *m
 	    vTaskDelay(DELAY);
 	    can_unpack(can, id, &motor->c_pos, &motor->c_vel, &motor->c_trq);
     }
+  } else {
+    Serial.println("Wrong position!");
   }
 }
 
