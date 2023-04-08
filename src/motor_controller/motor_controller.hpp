@@ -20,10 +20,11 @@ public:
   void loop();
 
 private:
-  mcp2515_can can_buses[CAN_COUNT] = { mcp2515_can(33) };
+  mcp2515_can can_buses[CAN_COUNT] = { mcp2515_can(4) };
 
   const int DELAY = 8;
   const int SET_ORIGIN_WAITING = 1500;
+  const int CHECK_WAITING = 64;
 
   void _start_motor(mcp2515_can *can, unsigned long id,
                     float *m_pos, float *m_vel, float *m_trq);

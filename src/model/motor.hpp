@@ -13,6 +13,7 @@ public:
 	bool axis_inversion;
 
 	bool turn_on = false;
+	bool set_origin = false;
 
 	float t_pos = 0;
 	float t_vel = 0;

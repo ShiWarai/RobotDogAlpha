@@ -84,14 +84,17 @@ void MotorController::loop()
                                 Serial.println("Motor zero");
                                 _zero_motor(&can_buses[Model::motors[t_id].can_id], t_id, 
                                             &Model::motors[t_id].c_pos, &Model::motors[t_id].c_vel, &Model::motors[t_id].c_trq);
+
+                                Model::motors[t_id].set_origin = true;
                                 break;
 
                             case CommandType::CHECK:
                                 Serial.print("Check motor ");
                                 Serial.println(t_id);
 
-                                _check_motor(&can_buses[Model::motors[t_id].can_id], t_id,
-                                            &Model::motors[t_id].c_pos, &Model::motors[t_id].c_vel, &Model::motors[t_id].c_trq);
+                                if(Model::motors[t_id].turn_on)
+                                  control_motor(&can_buses[Model::motors[t_id].can_id], t_id, &Model::motors[t_id]);
+                                  //_check_motor(&can_buses[Model::motors[t_id].can_id], t_id, &Model::motors[t_id].c_pos, &Model::motors[t_id].c_vel, &Model::motors[t_id].c_trq);
 
                                 Serial.print("Pos: ");
                                 Serial.print(Model::motors[t_id].c_pos);
@@ -177,7 +180,6 @@ void MotorController::_start_motor(mcp2515_can *can, unsigned long id,          
   can->sendMsgBuf(id, 0, 8, START_MOTOR);
   vTaskDelay(DELAY);
   can_unpack(can, id, c_pos, c_vel, c_trq);
-  vTaskDelay(DELAY);
 }
 
 void MotorController::_stop_motor(mcp2515_can *can, unsigned long id,                            // CAN bus and CAN ID
@@ -186,7 +188,6 @@ void MotorController::_stop_motor(mcp2515_can *can, unsigned long id,           
   can->sendMsgBuf(id, 0, 8, STOP_MOTOR);
   vTaskDelay(DELAY);
   can_unpack(can, id, c_pos, c_vel, c_trq);
-  vTaskDelay(DELAY);
 }
 
 void MotorController::_zero_motor(mcp2515_can *can, unsigned long id,                            // CAN bus and CAN ID
@@ -195,24 +196,29 @@ void MotorController::_zero_motor(mcp2515_can *can, unsigned long id,           
   can->sendMsgBuf(id, 0, 8, SET_ZERO);
   vTaskDelay(SET_ORIGIN_WAITING);
   can_unpack(can, id, c_pos, c_vel, c_trq);
-  vTaskDelay(DELAY);
 }
 
 void MotorController::_check_motor(mcp2515_can *can, unsigned long id,
                                    float *c_pos, float *c_vel, float *c_trq)
 {
-  can_pack(can, id, 0, 0);
-  vTaskDelay(DELAY);
+  can->sendMsgBuf(id, 0, 8, START_MOTOR);
+  vTaskDelay(CHECK_WAITING);
   can_unpack(can, id, c_pos, c_vel, c_trq);
-  vTaskDelay(DELAY);
 }
 
 void MotorController::control_motor(mcp2515_can *can, unsigned long id, Motor *motor)
 {
-  	can_pack(can, id, motor->t_pos, motor->kp, motor->t_vel, motor->kd, motor->t_trq); // Undone
-	vTaskDelay(DELAY);
-	can_unpack(can, id, &motor->c_pos, &motor->c_vel, &motor->c_trq);
-	vTaskDelay(DELAY);
+  if(motor->t_pos >= motor->min_pos && motor->t_pos <= motor->max_pos)
+  {
+    if(motor->t_vel == 0 && motor->t_trq == 0) 
+    {
+      can_pack(can, id, motor->t_pos, motor->kp, motor->t_vel, motor->kd, motor->t_trq); // Undone
+	    vTaskDelay(DELAY);
+	    can_unpack(can, id, &motor->c_pos, &motor->c_vel, &motor->c_trq);
+    }
+  } else {
+    Serial.printf("Wrong position for motor: %d\r\n", motor->id);
+  }
 }
 
 void MotorController::_control_motor(mcp2515_can *can, unsigned long id,
@@ -222,7 +228,6 @@ void MotorController::_control_motor(mcp2515_can *can, unsigned long id,
   can_pack(can, id, t_pos, t_kp); // Undone
   vTaskDelay(DELAY);
   can_unpack(can, id, c_pos, c_vel, c_trq);
-  vTaskDelay(DELAY);
 }
 
 unsigned int MotorController::float_to_uint(float x, float x_min, float x_max, float bits)
