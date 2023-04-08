@@ -24,6 +24,7 @@ private:
 
   const int DELAY = 8;
   const int SET_ORIGIN_WAITING = 1500;
+  const int CHECK_WAITING = 64;
 
   void _start_motor(mcp2515_can *can, unsigned long id,
                     float *m_pos, float *m_vel, float *m_trq);
